@@ -88,6 +88,8 @@ public partial class MainViewModel : ViewModelBase
 
     public bool IsNotSearching => !IsSearching;
 
+    public bool HasSearchResults => SearchResults.Count > 0;
+
     public int StarCount => Scene?.Objects.Count(item => item.Kind == SkyObjectKind.Star) ?? 0;
 
     public string SceneSummary => Scene is null
@@ -320,6 +322,7 @@ public partial class MainViewModel : ViewModelBase
         }
 
         OnPropertyChanged(nameof(SearchResults));
+        OnPropertyChanged(nameof(HasSearchResults));
     }
 
     private static string FormatDateTime(DateTimeOffset instant) =>

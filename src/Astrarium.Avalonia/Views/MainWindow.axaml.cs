@@ -11,4 +11,13 @@ public partial class MainWindow : Window
         InitializeComponent();
         DataContext = new MainViewModel(new SkySceneCalculator(StarCatalog.LoadBundled()));
     }
+
+    private void OnObjectSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (DataContext is not MainViewModel viewModel)
+            return;
+
+        if (e.AddedItems.OfType<SkyChartObject>().LastOrDefault() is { } selectedObject)
+            viewModel.SelectedObject = selectedObject;
+    }
 }

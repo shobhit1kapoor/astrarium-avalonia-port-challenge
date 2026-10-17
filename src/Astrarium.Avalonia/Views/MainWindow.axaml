@@ -93,14 +93,14 @@
         <Grid Grid.Row="1" ColumnDefinitions="252,*,314" Margin="18,16,18,10">
             <Border Grid.Column="0" Background="#0E1725" BorderBrush="#1E2D40" BorderThickness="1" CornerRadius="16" Padding="18">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Spacing="16">
+                    <StackPanel Spacing="10">
                         <StackPanel Spacing="5">
                             <TextBlock Classes="kicker" Text="OBSERVING SITE" />
                             <TextBlock Text="Set your horizon" FontSize="19" FontWeight="SemiBold" Foreground="#EDF3FC" />
                             <TextBlock Text="The sky is recalculated for this location." Classes="secondary" FontSize="11" TextWrapping="Wrap" />
                         </StackPanel>
 
-                        <StackPanel Spacing="7">
+                        <StackPanel Spacing="5">
                             <TextBlock Text="QUICK LOCATIONS" Classes="kicker" />
                             <ComboBox ItemsSource="{Binding LocationPresets}" SelectedItem="{Binding SelectedLocationPreset}" PlaceholderText="Choose a site" Background="#0B1422" BorderBrush="#27384F" Foreground="#E7EEF9" CornerRadius="9" Padding="9,7">
                                 <ComboBox.ItemTemplate>
@@ -111,17 +111,17 @@
                             </ComboBox>
                         </StackPanel>
 
-                        <StackPanel Spacing="7">
+                        <StackPanel Spacing="5">
                             <TextBlock Text="SITE NAME" Classes="kicker" />
                             <TextBox Text="{Binding LocationName}" PlaceholderText="Observing site" />
                         </StackPanel>
 
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="9">
-                            <StackPanel Spacing="7">
+                            <StackPanel Spacing="5">
                                 <TextBlock Text="LATITUDE" Classes="kicker" />
                                 <TextBox Text="{Binding LatitudeText}" PlaceholderText="51.4779" />
                             </StackPanel>
-                            <StackPanel Grid.Column="1" Spacing="7">
+                            <StackPanel Grid.Column="1" Spacing="5">
                                 <TextBlock Text="LONGITUDE" Classes="kicker" />
                                 <TextBox Text="{Binding LongitudeText}" PlaceholderText="0.0000" />
                             </StackPanel>
@@ -143,7 +143,7 @@
 
                         <Border Height="1" Background="#1E2D40" />
 
-                        <StackPanel Spacing="9">
+                        <StackPanel Spacing="6">
                             <TextBlock Classes="kicker" Text="CHART LAYERS" />
                             <CheckBox Content="Star catalog" IsChecked="{Binding ShowStars}" Foreground="#CFD9E8" />
                             <CheckBox Content="Featured asterisms" IsChecked="{Binding ShowConstellations}" Foreground="#CFD9E8" />
@@ -151,12 +151,7 @@
                             <TextBlock Text="Cassiopeia · Orion · Big Dipper · Summer Triangle" FontSize="10" Classes="secondary" TextWrapping="Wrap" />
                         </StackPanel>
 
-                        <Border Background="#101F2A" BorderBrush="#1D4148" BorderThickness="1" CornerRadius="10" Padding="11">
-                            <StackPanel Spacing="4">
-                                <TextBlock Text="OFFLINE BY DESIGN" FontSize="10" FontWeight="SemiBold" Foreground="#9EE5D8" />
-                                <TextBlock Text="Star data and core ephemerides are bundled. No account or connection is needed." FontSize="10" Foreground="#A8B8C9" TextWrapping="Wrap" />
-                            </StackPanel>
-                        </Border>
+                        <TextBlock Text="OFFLINE BY DESIGN · CATALOG AND EPHEMERIDES INCLUDED" FontSize="8" Foreground="#8ECFC4" TextWrapping="Wrap" />
                     </StackPanel>
                 </ScrollViewer>
             </Border>
@@ -167,7 +162,7 @@
                         <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                             <TextBlock Text="ALL-SKY HORIZON MAP" Classes="kicker" Foreground="#B7C9DD" />
                             <Border Background="#122332" CornerRadius="6" Padding="7,3">
-                                <TextBlock Text="NORTH UP" FontSize="8" Foreground="#8EDBCC" />
+                                <TextBlock Text="ALT / AZ" FontSize="8" Foreground="#8EDBCC" />
                             </Border>
                         </StackPanel>
                         <TextBlock Grid.Column="1" Text="{Binding SceneSummary}" FontSize="10" Foreground="#8599B5" VerticalAlignment="Center" />
@@ -179,13 +174,15 @@
                                              ShowStars="{Binding ShowStars}"
                                              ShowConstellations="{Binding ShowConstellations}"
                                              ShowBodies="{Binding ShowBodies}"
+                                             Focusable="True"
+                                             AutomationProperties.Name="All-sky horizon map. Use the arrow keys to move between visible objects."
                                              Margin="8" />
                         <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="22,0,0,20" Spacing="3" IsHitTestVisible="False">
                             <TextBlock Text="{Binding SkySummary}" FontSize="11" Foreground="#DAE7F5" />
                             <TextBlock Text="HORIZON VIEW  ·  TOPOCENTRIC POSITIONS" FontSize="8" Foreground="#8096B1" />
                         </StackPanel>
                         <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,16,22,0" Background="#0A111FCC" BorderBrush="#283A50" BorderThickness="1" CornerRadius="9" Padding="9,6" IsHitTestVisible="False">
-                            <TextBlock Text="CLICK AN OBJECT TO INSPECT" FontSize="8" Foreground="#A9BCD4" />
+                            <TextBlock Text="DRAG TO PAN · WHEEL TO ZOOM · HOME TO RESET · CLICK TO INSPECT" FontSize="8" Foreground="#A9BCD4" />
                         </Border>
                     </Grid>
                 </Grid>
@@ -201,9 +198,11 @@
                     <TextBox Grid.Row="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search stars, planets, designations…" Margin="0,0,0,9" />
 
                     <Grid Grid.Row="2">
-                        <StackPanel IsVisible="{Binding IsSearching}">
+                        <Grid IsVisible="{Binding IsSearching}" RowDefinitions="Auto,*">
                             <TextBlock Text="SEARCH RESULTS" Classes="kicker" Margin="4,2,0,7" />
-                            <ListBox ItemsSource="{Binding SearchResults}" SelectedItem="{Binding SelectedObject}">
+                            <ListBox Grid.Row="1" ItemsSource="{Binding SearchResults}"
+                                     SelectedItem="{Binding SelectedObject, Mode=OneWay}"
+                                     SelectionChanged="OnObjectSelectionChanged">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="core:SkyChartObject">
                                         <Grid ColumnDefinitions="*,Auto">
@@ -216,14 +215,17 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                        </StackPanel>
+                            <TextBlock Grid.Row="1" Text="No matching objects. Try a name, HIP, HR, or HD identifier." IsVisible="{Binding !HasSearchResults}" FontSize="10" Classes="secondary" TextWrapping="Wrap" Margin="4,12,4,0" />
+                        </Grid>
 
-                        <StackPanel IsVisible="{Binding IsNotSearching}">
+                        <Grid IsVisible="{Binding IsNotSearching}" RowDefinitions="Auto,*">
                             <Grid ColumnDefinitions="*,Auto" Margin="4,1,4,5">
                                 <TextBlock Text="OBJECT" Classes="kicker" />
                                 <TextBlock Grid.Column="1" Text="ALTITUDE" Classes="kicker" />
                             </Grid>
-                            <ListBox ItemsSource="{Binding VisibleTargets}" SelectedItem="{Binding SelectedObject}">
+                            <ListBox Grid.Row="1" ItemsSource="{Binding VisibleTargets}"
+                                     SelectedItem="{Binding SelectedObject, Mode=OneWay}"
+                                     SelectionChanged="OnObjectSelectionChanged">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="core:SkyChartObject">
                                         <Grid ColumnDefinitions="*,Auto">
@@ -236,8 +238,8 @@
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
                             </ListBox>
-                            <TextBlock Text="No bright targets are above the horizon at this moment." IsVisible="{Binding !HasVisibleTargets}" FontSize="10" Classes="secondary" TextWrapping="Wrap" />
-                        </StackPanel>
+                            <TextBlock Grid.Row="1" Text="No bright targets are above the horizon at this moment." IsVisible="{Binding !HasVisibleTargets}" FontSize="10" Classes="secondary" TextWrapping="Wrap" Margin="4,12,4,0" />
+                        </Grid>
                     </Grid>
 
                     <Border Grid.Row="3" Background="#111D2C" BorderBrush="#223349" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,10,0,0">

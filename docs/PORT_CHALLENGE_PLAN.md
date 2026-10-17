@@ -11,7 +11,7 @@ Deliver a credible, polished Avalonia port or rewrite of an application that exi
 - [ ] Decide the entry track: open source or closed source.
 - [ ] Limit the team to three people; only one prize is awarded per team.
 - [ ] Produce a runnable build for every platform we claim to support. Closed-source builds must be usable by judges; arrange a trial, temporary key, or demo account if needed.
-- [ ] Capture comparable before-and-after screenshots.
+- [x] Capture before-and-after screenshots; the source screenshot is linked at the pinned upstream revision rather than redistributed, and the Avalonia image is captured from the running port.
 - [ ] Write a migration report covering actual effort and cost, what carried over, what needed redesign, surprises, compromises, and platform-specific differences.
 - [ ] Submit through the official entry form before **2026-10-23 23:59 UTC** ( **2026-10-23 18:59 America/Chicago** ).
 
@@ -44,9 +44,9 @@ Working priorities:
 Astrarium is the selected **open-source** submission, targeting **Best Legacy Revival** and **Best Cross-Platform Port**. See the [migration brief](ASTRARIUM_MIGRATION_BRIEF.md) and [delivery plan](ASTRARIUM_PORT_PLAN.md) for the source audit, port boundary, implementation status, evidence map, risks, and dated schedule.
 
 - [x] Confirm the original Windows planetarium predates the challenge and its code license allows an open-source port.
-- [x] Establish a portable .NET/Avalonia solution, run the first observing flow on Windows, and pass the first hosted build/test/package matrix on Windows, macOS, and Linux.
-- [ ] Run the CI matrix and launch macOS/Linux artifacts; record CI-only versus physical checks.
-- [ ] Finish the focused observing flow and review keyboard use, resizing, and scaling.
+- [x] Establish a portable .NET/Avalonia solution, run the observing flow on Windows, and pass an initial hosted build/test/package matrix on Windows, macOS, and Linux.
+- [ ] Pass the updated CI matrix with native-window startup smoke on Windows, macOS, and Linux; record runner-only versus physical checks.
+- [ ] Review the focused observing flow at the minimum window size and common scaling levels; keyboard arrow navigation, search, map selection, panning, zoom, and reset have been checked on Windows.
 - [ ] Publish the source repository under an OSI-approved license and judge-downloadable builds for each target OS.
-- [ ] Add comparable before/after screenshots and an honest README migration report with actual effort and cost.
+- [ ] Finish the honest README migration report with observed elapsed engineering time, migration cost, and remaining limits.
 - [ ] Submit through the official form before the deadline and save the confirmation.

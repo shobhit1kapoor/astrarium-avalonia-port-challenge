@@ -21,4 +21,4 @@ The retargeted calculation library is adapted from [Astrarium/Astrarium](https:/
 - License: [Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)](https://creativecommons.org/licenses/by-sa/4.0/).
 - The file is retained alongside the upstream algorithms with its source attribution and is not relabeled under the application MIT license.
 
-No other Astrarium catalog, image, font, icon, or plugin asset is currently included. Add each new asset here only after its separate terms have been checked.
+No upstream textures, landscapes, catalog images, fonts, or plugin assets are bundled. The README links to the upstream screenshot at the pinned source revision for comparison instead of redistributing it. `docs/images/astrarium-avalonia.jpg` is a screenshot of this port's own UI and contains no separately bundled artwork. Add any future third-party asset here only after its separate terms have been checked.

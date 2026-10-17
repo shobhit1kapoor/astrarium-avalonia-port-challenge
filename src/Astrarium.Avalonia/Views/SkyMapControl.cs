@@ -24,6 +24,12 @@ public sealed class SkyMapControl : Control
     public static readonly StyledProperty<bool> ShowBodiesProperty =
         AvaloniaProperty.Register<SkyMapControl, bool>(nameof(ShowBodies), true);
 
+    public static readonly StyledProperty<double> ZoomFactorProperty =
+        AvaloniaProperty.Register<SkyMapControl, double>(nameof(ZoomFactor), 1.0);
+
+    public static readonly StyledProperty<double> AzimuthOffsetDegreesProperty =
+        AvaloniaProperty.Register<SkyMapControl, double>(nameof(AzimuthOffsetDegrees));
+
     private static readonly IBrush SkyFill = new SolidColorBrush(Color.Parse("#0B1424"));
     private static readonly IPen HorizonPen = new Pen(new SolidColorBrush(Color.Parse("#54BDAE")), 1.4);
     private static readonly IPen GridPen = new Pen(new SolidColorBrush(Color.Parse("#31445C")), 0.8);
@@ -40,10 +46,16 @@ public sealed class SkyMapControl : Control
     ];
 
     private static readonly Typeface MapTypeface = new("Inter");
+    private Point? _panStartPosition;
+    private double _panStartAzimuthOffset;
+    private IPointer? _panPointer;
+    private bool _isPanning;
+    private bool _selectionClickPending;
 
     static SkyMapControl()
     {
-        AffectsRender<SkyMapControl>(SceneProperty, SelectedObjectProperty, ShowStarsProperty, ShowConstellationsProperty, ShowBodiesProperty);
+        AffectsRender<SkyMapControl>(SceneProperty, SelectedObjectProperty, ShowStarsProperty, ShowConstellationsProperty,
+            ShowBodiesProperty, ZoomFactorProperty, AzimuthOffsetDegreesProperty);
     }
 
     public SkyScene? Scene
@@ -76,6 +88,18 @@ public sealed class SkyMapControl : Control
         set => SetValue(ShowBodiesProperty, value);
     }
 
+    public double ZoomFactor
+    {
+        get => GetValue(ZoomFactorProperty);
+        private set => SetCurrentValue(ZoomFactorProperty, value);
+    }
+
+    public double AzimuthOffsetDegrees
+    {
+        get => GetValue(AzimuthOffsetDegreesProperty);
+        private set => SetCurrentValue(AzimuthOffsetDegreesProperty, value);
+    }
+
     public override void Render(DrawingContext context)
     {
         base.Render(context);
@@ -101,30 +125,33 @@ public sealed class SkyMapControl : Control
         var starsByHip = scene.Objects
             .Where(item => item.Kind == SkyObjectKind.Star && item.Id.StartsWith("hip:", StringComparison.Ordinal))
             .ToDictionary(item => item.Id[4..], item => item, StringComparer.Ordinal);
-        if (ShowConstellations)
-            DrawConstellations(context, starsByHip, center, radius);
-
-        if (ShowStars)
+        using (context.PushGeometryClip(new EllipseGeometry(new Rect(center.X - radius, center.Y - radius, radius * 2, radius * 2))))
         {
-            foreach (var item in scene.Objects)
+            if (ShowConstellations)
+                DrawConstellations(context, starsByHip, center, radius);
+
+            var occupiedLabels = new List<Rect>();
+            if (ShowStars)
             {
-                if (item.Kind != SkyObjectKind.Star || item.AltitudeDegrees < 0)
-                    continue;
+                foreach (var item in scene.Objects)
+                {
+                    if (item.Kind != SkyObjectKind.Star || item.AltitudeDegrees < 0)
+                        continue;
 
-                var point = ToScreen(item, center, radius);
-                var size = Math.Clamp(5.2 - item.Magnitude * 0.62, 1.15, 5.7);
-                var color = StarColor(item.ColorIndex);
-                var brush = new SolidColorBrush(color);
-                context.DrawEllipse(brush, null, point, size / 2, size / 2);
-
-                if (item.Magnitude <= 1.45 || item.Id == SelectedObject?.Id)
-                    DrawLabel(context, item.Name, new Point(point.X + size + 4, point.Y - 6), 10.5, item.Id == SelectedObject?.Id);
+                    var point = ToScreen(item, center, radius);
+                    var size = Math.Clamp(5.2 - item.Magnitude * 0.62, 1.15, 5.7);
+                    var color = StarColor(item.ColorIndex);
+                    var brush = new SolidColorBrush(color);
+                    context.DrawEllipse(brush, null, point, size / 2, size / 2);
+                }
             }
-        }
 
-        if (ShowBodies)
-            DrawBodies(context, scene, center, radius);
-        DrawSelectedInfo(context, center, radius);
+            if (ShowBodies)
+                DrawBodies(context, scene, center, radius, occupiedLabels);
+            if (ShowStars)
+                DrawStarLabels(context, scene, center, radius, occupiedLabels);
+            DrawSelectedInfo(context, center, radius);
+        }
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -134,7 +161,85 @@ public sealed class SkyMapControl : Control
         if (Scene is null)
             return;
 
-        var pointer = e.GetPosition(this);
+        var properties = e.GetCurrentPoint(this).Properties;
+        if (properties.IsRightButtonPressed || properties.IsMiddleButtonPressed)
+        {
+            BeginPointerGesture(e, isPanning: true);
+        }
+        else if (properties.IsLeftButtonPressed)
+        {
+            Focus();
+            BeginPointerGesture(e, isPanning: false);
+        }
+
+        e.Handled = true;
+    }
+
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+
+        if (_panPointer != e.Pointer || _panStartPosition is not { } start)
+            return;
+
+        var position = e.GetPosition(this);
+        var deltaX = position.X - start.X;
+        var deltaY = position.Y - start.Y;
+        if (!_isPanning && Math.Sqrt(deltaX * deltaX + deltaY * deltaY) < 6)
+            return;
+
+        _isPanning = true;
+        var radius = Math.Max(1, Math.Min(Bounds.Width - 44, Bounds.Height - 44) / 2);
+        AzimuthOffsetDegrees = NormalizeDegrees(_panStartAzimuthOffset + deltaX / radius * 180 / Math.PI / ZoomFactor);
+        e.Handled = true;
+    }
+
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        base.OnPointerReleased(e);
+
+        if (_panPointer != e.Pointer)
+            return;
+
+        if (_selectionClickPending && !_isPanning)
+            SelectNearest(e.GetPosition(this));
+
+        _panPointer = null;
+        _panStartPosition = null;
+        _isPanning = false;
+        _selectionClickPending = false;
+        e.Pointer.Capture(null);
+        e.Handled = true;
+    }
+
+    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
+    {
+        base.OnPointerCaptureLost(e);
+
+        if (_panPointer != e.Pointer)
+            return;
+
+        _panPointer = null;
+        _panStartPosition = null;
+        _isPanning = false;
+        _selectionClickPending = false;
+    }
+
+    private void BeginPointerGesture(PointerPressedEventArgs e, bool isPanning)
+    {
+        _panStartPosition = e.GetPosition(this);
+        _panStartAzimuthOffset = AzimuthOffsetDegrees;
+        _panPointer = e.Pointer;
+        _isPanning = isPanning;
+        _selectionClickPending = !isPanning;
+        e.Pointer.Capture(this);
+    }
+
+    private void SelectNearest(Point pointer)
+    {
+        if (Scene is null)
+            return;
+
         var diameter = Math.Max(0, Math.Min(Bounds.Width - 44, Bounds.Height - 44));
         var radius = diameter / 2;
         var center = new Point(Bounds.Width / 2, Bounds.Height / 2 + 5);
@@ -147,42 +252,121 @@ public sealed class SkyMapControl : Control
             .FirstOrDefault();
 
         if (nearest.Item is not null)
-        {
             SetCurrentValue(SelectedObjectProperty, nearest.Item);
+    }
+
+    protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+    {
+        base.OnPointerWheelChanged(e);
+
+        if (e.Delta.Y == 0)
+            return;
+
+        var factor = e.Delta.Y > 0 ? 1.2 : 1 / 1.2;
+        ZoomFactor = Math.Clamp(ZoomFactor * factor, 1.0, 3.0);
+        e.Handled = true;
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        base.OnKeyDown(e);
+
+        if (e.Key == Key.Home)
+        {
+            ZoomFactor = 1.0;
+            AzimuthOffsetDegrees = 0;
             e.Handled = true;
+            return;
+        }
+
+        if (Scene is null || SelectedObject is null || SelectedObject.AltitudeDegrees < 0)
+            return;
+
+        var direction = e.Key switch
+        {
+            Key.Left => new Vector(-1, 0),
+            Key.Right => new Vector(1, 0),
+            Key.Up => new Vector(0, -1),
+            Key.Down => new Vector(0, 1),
+            _ => default
+        };
+        if (direction == default)
+            return;
+
+        var diameter = Math.Max(0, Math.Min(Bounds.Width - 44, Bounds.Height - 44));
+        var center = new Point(Bounds.Width / 2, Bounds.Height / 2 + 5);
+        var radius = diameter / 2;
+        var origin = ToScreen(SelectedObject, center, radius);
+        if (!IsInsideChart(origin, center, radius))
+            return;
+
+        var next = Scene.Objects
+            .Where(item => item.Id != SelectedObject.Id && item.AltitudeDegrees >= 0 &&
+                (item.Kind == SkyObjectKind.Star ? ShowStars : ShowBodies))
+            .Select(item => (Item: item, Point: ToScreen(item, center, radius)))
+            .Where(pair => IsInsideChart(pair.Point, center, radius))
+            .Select(pair => (pair.Item, Offset: pair.Point - origin))
+            .Select(pair => (pair.Item, Along: pair.Offset.X * direction.X + pair.Offset.Y * direction.Y,
+                Across: Math.Abs(pair.Offset.X * direction.Y - pair.Offset.Y * direction.X)))
+            .Where(pair => pair.Along > 3)
+            .OrderBy(pair => pair.Along + pair.Across * 2.5)
+            .FirstOrDefault();
+
+        if (next.Item is null)
+            return;
+
+        SetCurrentValue(SelectedObjectProperty, next.Item);
+        e.Handled = true;
+    }
+
+    private void DrawGrid(DrawingContext context, Point center, double radius)
+    {
+        using (context.PushGeometryClip(new EllipseGeometry(new Rect(center.X - radius, center.Y - radius, radius * 2, radius * 2))))
+        {
+            foreach (var altitude in new[] { 30.0, 60.0 })
+            {
+                var ringRadius = radius * (90 - altitude) / 90 * ZoomFactor;
+                context.DrawEllipse(null, GridPen, center, ringRadius, ringRadius);
+                DrawAltitudeLabel(context, altitude, center, radius);
+            }
+
+            foreach (var azimuth in new[] { 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0 })
+            {
+                var angle = Angle.ToRadians(azimuth + AzimuthOffsetDegrees);
+                var distance = radius * ZoomFactor;
+                var edge = new Point(center.X + distance * Math.Sin(angle), center.Y - distance * Math.Cos(angle));
+                context.DrawLine(GridPen, center, edge);
+            }
+
+            context.DrawEllipse(null, HorizonPen, center, radius, radius);
         }
     }
 
-    private static void DrawGrid(DrawingContext context, Point center, double radius)
+    private void DrawAltitudeLabel(DrawingContext context, double altitude, Point center, double radius)
     {
-        foreach (var altitude in new[] { 30.0, 60.0 })
-        {
-            var ringRadius = radius * (90 - altitude) / 90;
-            context.DrawEllipse(null, GridPen, center, ringRadius, ringRadius);
-        }
-
-        foreach (var azimuth in new[] { 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0 })
-        {
-            var angle = Angle.ToRadians(azimuth);
-            var edge = new Point(center.X + radius * Math.Sin(angle), center.Y - radius * Math.Cos(angle));
-            context.DrawLine(GridPen, center, edge);
-        }
-
-        context.DrawEllipse(null, HorizonPen, center, radius, radius);
-        DrawText(context, "30° ALT", new Point(center.X + 9, center.Y - radius * 0.68), 9, CompassBrush);
-        DrawText(context, "60°", new Point(center.X + 9, center.Y - radius * 0.36), 9, CompassBrush);
+        var distance = radius * (90 - altitude) / 90 * ZoomFactor;
+        var angle = Angle.ToRadians(AzimuthOffsetDegrees + 22);
+        var point = new Point(center.X + distance * Math.Sin(angle), center.Y - distance * Math.Cos(angle));
+        DrawText(context, $"{altitude:0}°", point, 9, CompassBrush);
     }
 
-    private static void DrawCompass(DrawingContext context, Point center, double radius)
+    private void DrawCompass(DrawingContext context, Point center, double radius)
     {
-        DrawText(context, "N", new Point(center.X - 4, center.Y - radius - 22), 12, BodyLabelBrush);
-        DrawText(context, "E", new Point(center.X + radius + 9, center.Y - 6), 12, BodyLabelBrush);
-        DrawText(context, "S", new Point(center.X - 4, center.Y + radius + 7), 12, BodyLabelBrush);
-        DrawText(context, "W", new Point(center.X - radius - 20, center.Y - 6), 12, BodyLabelBrush);
+        DrawCompassLabel(context, "N", AzimuthOffsetDegrees, center, radius);
+        DrawCompassLabel(context, "E", 90 + AzimuthOffsetDegrees, center, radius);
+        DrawCompassLabel(context, "S", 180 + AzimuthOffsetDegrees, center, radius);
+        DrawCompassLabel(context, "W", 270 + AzimuthOffsetDegrees, center, radius);
         DrawText(context, "ZENITH", new Point(center.X - 20, center.Y - 4), 8, CompassBrush);
     }
 
-    private static void DrawConstellations(
+    private static void DrawCompassLabel(DrawingContext context, string label, double azimuth, Point center, double radius)
+    {
+        var angle = Angle.ToRadians(azimuth);
+        var point = new Point(center.X + (radius + 10) * Math.Sin(angle), center.Y - (radius + 10) * Math.Cos(angle));
+        DrawText(context, label, new Point(point.X - 4, point.Y - 6), 12, BodyLabelBrush);
+    }
+
+    private void DrawConstellations(
         DrawingContext context,
         IReadOnlyDictionary<string, SkyChartObject> starsByHip,
         Point center,
@@ -200,7 +384,12 @@ public sealed class SkyMapControl : Control
         }
     }
 
-    private void DrawBodies(DrawingContext context, SkyScene scene, Point center, double radius)
+    private void DrawBodies(
+        DrawingContext context,
+        SkyScene scene,
+        Point center,
+        double radius,
+        List<Rect> occupiedLabels)
     {
         foreach (var body in scene.Objects.Where(item => item.Kind != SkyObjectKind.Star && item.AltitudeDegrees >= 0))
         {
@@ -219,9 +408,78 @@ public sealed class SkyMapControl : Control
 
             context.DrawEllipse(halo, null, point, selected ? 12 : 9, selected ? 12 : 9);
             context.DrawEllipse(brush, selected ? SelectionPen : null, point, selected ? 4.3 : 3.2, selected ? 4.3 : 3.2);
-            DrawLabel(context, body.Name, new Point(point.X + 10, point.Y - 8), 11.5, selected);
+            DrawSmartLabel(context, body.Name, point, 11.5, selected, center, radius, occupiedLabels);
         }
     }
+
+    private void DrawStarLabels(DrawingContext context, SkyScene scene, Point center, double radius, List<Rect> occupiedLabels)
+    {
+        var stars = scene.Objects
+            .Where(item => item.Kind == SkyObjectKind.Star && item.AltitudeDegrees >= 0 &&
+                (item.Magnitude <= 1.45 || item.Id == SelectedObject?.Id))
+            .OrderByDescending(item => item.Id == SelectedObject?.Id)
+            .ThenBy(item => item.Magnitude);
+
+        foreach (var star in stars)
+        {
+            DrawSmartLabel(context, star.Name, ToScreen(star, center, radius), 10.5,
+                star.Id == SelectedObject?.Id, center, radius, occupiedLabels);
+        }
+    }
+
+    private static bool DrawSmartLabel(
+        DrawingContext context,
+        string text,
+        Point anchor,
+        double size,
+        bool emphasized,
+        Point center,
+        double radius,
+        List<Rect> occupiedLabels)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+            return false;
+
+        var color = emphasized ? Color.Parse("#8CE8D8") : Color.Parse("#CBD7EB");
+        var formatted = new FormattedText(text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, MapTypeface, size, new SolidColorBrush(color));
+        var bounds = new Rect(center.X - radius + 2, center.Y - radius + 2, radius * 2 - 4, radius * 2 - 4);
+        var origins = new[]
+        {
+            new Point(anchor.X + 9, anchor.Y - formatted.Height / 2),
+            new Point(anchor.X - formatted.Width - 9, anchor.Y - formatted.Height / 2),
+            new Point(anchor.X - formatted.Width / 2, anchor.Y - formatted.Height - 8),
+            new Point(anchor.X - formatted.Width / 2, anchor.Y + 8),
+            new Point(anchor.X + 8, anchor.Y - formatted.Height - 8),
+            new Point(anchor.X + 8, anchor.Y + 8)
+        };
+
+        foreach (var origin in origins)
+        {
+            var labelBounds = new Rect(origin.X, origin.Y, formatted.Width, formatted.Height);
+            if (labelBounds.Left < bounds.Left || labelBounds.Top < bounds.Top ||
+                labelBounds.Right > bounds.Right || labelBounds.Bottom > bounds.Bottom ||
+                occupiedLabels.Any(existing => Overlaps(labelBounds, existing)))
+                continue;
+
+            context.DrawText(formatted, origin);
+            occupiedLabels.Add(labelBounds.Inflate(2));
+            return true;
+        }
+
+        if (emphasized)
+        {
+            var origin = origins[0];
+            context.DrawText(formatted, origin);
+            occupiedLabels.Add(new Rect(origin.X, origin.Y, formatted.Width, formatted.Height).Inflate(2));
+            return true;
+        }
+
+        return false;
+    }
+
+    private static bool Overlaps(Rect first, Rect second) =>
+        first.Left < second.Right && first.Right > second.Left &&
+        first.Top < second.Bottom && first.Bottom > second.Top;
 
     private void DrawSelectedInfo(DrawingContext context, Point center, double radius)
     {
@@ -235,10 +493,10 @@ public sealed class SkyMapControl : Control
         context.DrawEllipse(null, SelectionPen, point, 8.8, 8.8);
     }
 
-    private static Point ToScreen(SkyChartObject item, Point center, double radius)
+    private Point ToScreen(SkyChartObject item, Point center, double radius)
     {
-        var distance = radius * (90 - Math.Clamp(item.AltitudeDegrees, 0, 90)) / 90;
-        var azimuth = Angle.ToRadians(item.AzimuthDegrees);
+        var distance = radius * (90 - Math.Clamp(item.AltitudeDegrees, 0, 90)) / 90 * ZoomFactor;
+        var azimuth = Angle.ToRadians(item.AzimuthDegrees + AzimuthOffsetDegrees);
         return new Point(center.X + distance * Math.Sin(azimuth), center.Y - distance * Math.Cos(azimuth));
     }
 
@@ -255,11 +513,17 @@ public sealed class SkyMapControl : Control
         return Color.Parse("#FFAB7A");
     }
 
-    private static void DrawLabel(DrawingContext context, string text, Point point, double size, bool emphasized)
+    private static double NormalizeDegrees(double degrees)
     {
-        var color = emphasized ? Color.Parse("#8CE8D8") : Color.Parse("#CBD7EB");
-        var brush = new SolidColorBrush(color);
-        DrawText(context, text, point, size, brush);
+        var normalized = degrees % 360;
+        return normalized < 0 ? normalized + 360 : normalized;
+    }
+
+    private static bool IsInsideChart(Point point, Point center, double radius)
+    {
+        var x = point.X - center.X;
+        var y = point.Y - center.Y;
+        return x * x + y * y <= radius * radius;
     }
 
     private static void DrawText(DrawingContext context, string text, Point point, double size, IBrush brush)
