@@ -36,8 +36,8 @@ jobs:
           site="src/Astrarium.Avalonia.Browser/bin/Release/net10.0-browser/publish/wwwroot"
           test -s "$site/index.html"
           find "$site" -maxdepth 1 -type f -name 'main*.js' -size +0c | grep -q .
-          test -s "$site/js/storage.js"
-          test -s "$site/_framework/dotnet.js"
+          find "$site/js" -maxdepth 1 -type f -name 'storage*.js' -size +0c | grep -q .
+          find "$site/_framework" -maxdepth 1 -type f -name 'dotnet.*.js' -size +0c | grep -q .
           find "$site/_framework" -type f -name '*.wasm' -size +0c | grep -q .
 
       - name: Package browser site
