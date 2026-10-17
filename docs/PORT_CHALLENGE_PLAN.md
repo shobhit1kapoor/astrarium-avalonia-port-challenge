@@ -11,7 +11,7 @@ Deliver a credible, polished Avalonia port or rewrite of an application that exi
 - [x] Choose the open-source entry track.
 - [x] Keep the entry to one human contributor, within the three-person limit.
 - [x] Produce self-contained builds for Windows x64, Linux x64, macOS Intel, and macOS Apple silicon with the planner and accessible control names in [Preview 5](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.5). The packaged Windows Preview 4 archive and planner were launched and visually reviewed locally; Preview 5 window-open checks ran on hosted runners for all four RIDs.
-- [x] Capture before-and-after screenshots; the source screenshot is linked at the pinned upstream revision rather than redistributed, and the Avalonia image is captured from the running port.
+- [x] Capture before-and-after screenshots; the source screenshot is linked at the pinned upstream revision rather than redistributed, and the Avalonia image is a deterministic render of the production window. The packaged Windows app was separately launched and reviewed.
 - [x] Write a migration report covering elapsed release window and cost, what carried over, redesign, surprises, compromises, and runner-only platform checks; actively tracked person-hours were not recorded and are not claimed.
 - [ ] Submit through the [official entry form](https://docs.google.com/forms/d/e/1FAIpQLSfJsgz1HRHKsxH0yRnn2wcvbZ-tSkmnjDXxIhE5YjM1v3lVkg/viewform) before **2026-10-23 23:59 UTC** (**2026-10-23 18:59 America/Chicago**); retain the confirmation.
 

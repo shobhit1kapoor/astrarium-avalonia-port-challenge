@@ -27,12 +27,16 @@ public sealed class DisplayScalingTests
             {
                 var window = new MainWindow(new UserPreferencesStore(preferencesPath));
                 var viewModel = (MainViewModel)window.DataContext!;
-                window.Width = 1080;
-                window.Height = 720;
+                window.Width = 1500;
+                window.Height = 960;
                 window.Show();
                 WaitUntil(() => !viewModel.IsBusy && viewModel.Scene is not null,
                     "main window finished its initial sky calculation");
                 AssertInteractiveFieldsAreNamed(window);
+                VerifyWindowAtSize(window, 1500, 960, "main-default.png");
+                window.Width = 1080;
+                window.Height = 720;
+                Dispatcher.UIThread.RunJobs();
                 VerifyWindowAtScales(window, 1080, 720, "main");
             }, CancellationToken.None);
         }
@@ -103,6 +107,34 @@ public sealed class DisplayScalingTests
 
         window.Close();
         Dispatcher.UIThread.RunJobs();
+    }
+
+    private static void VerifyWindowAtSize(Window window, int width, int height, string snapshotName)
+    {
+        Dispatcher.UIThread.RunJobs();
+        Assert.AreEqual(width, window.ClientSize.Width, 1, "Main window did not retain its default logical width.");
+        Assert.AreEqual(height, window.ClientSize.Height, 1, "Main window did not retain its default logical height.");
+
+        foreach (var control in window.GetVisualDescendants().OfType<Control>())
+        {
+            Assert.IsTrue(double.IsFinite(control.Bounds.X) && double.IsFinite(control.Bounds.Y) &&
+                          double.IsFinite(control.Bounds.Width) && double.IsFinite(control.Bounds.Height),
+                $"{control.GetType().Name} has invalid layout bounds at the default window size: {control.Bounds}.");
+            Assert.IsTrue(control.Bounds.Width >= 0 && control.Bounds.Height >= 0,
+                $"{control.GetType().Name} has a negative layout size at the default window size: {control.Bounds}.");
+        }
+
+        using var frame = window.CaptureRenderedFrame()
+            ?? throw new AssertFailedException("Avalonia did not capture the default-size main window.");
+        Assert.AreEqual(width, frame.PixelSize.Width, "Unexpected default-size main window raster width.");
+        Assert.AreEqual(height, frame.PixelSize.Height, "Unexpected default-size main window raster height.");
+
+        var snapshotDirectory = Environment.GetEnvironmentVariable("ASTRARIUM_DPI_SNAPSHOT_DIR");
+        if (!string.IsNullOrWhiteSpace(snapshotDirectory))
+        {
+            Directory.CreateDirectory(snapshotDirectory);
+            frame.Save(Path.Combine(snapshotDirectory, snapshotName), PngBitmapEncoderOptions.Default);
+        }
     }
 
     private static void WaitUntil(Func<bool> condition, string description)
