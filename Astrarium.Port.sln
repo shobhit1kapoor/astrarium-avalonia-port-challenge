@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astrarium.Algorithms.Tests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astrarium.Port.Core.Tests", "tests\Astrarium.Port.Core.Tests\Astrarium.Port.Core.Tests.csproj", "{C3440339-2202-42F2-9BF2-606A622D13BA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astrarium.Avalonia.Tests", "tests\Astrarium.Avalonia.Tests\Astrarium.Avalonia.Tests.csproj", "{8879F176-0498-4873-BBB4-8BCBD02397B0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,18 @@ Global
 		{C3440339-2202-42F2-9BF2-606A622D13BA}.Release|x64.Build.0 = Release|Any CPU
 		{C3440339-2202-42F2-9BF2-606A622D13BA}.Release|x86.ActiveCfg = Release|Any CPU
 		{C3440339-2202-42F2-9BF2-606A622D13BA}.Release|x86.Build.0 = Release|Any CPU
+		{8879F176-0498-4873-BBB4-8BCBD02397B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8879F176-0498-4873-BBB4-8BCBD02397B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8879F176-0498-4873-BBB4-8BCBD02397B0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8879F176-0498-4873-BBB4-8BCBD02397B0}.Debug|x64.Build.0 = Debug|Any CPU
+		{8879F176-0498-4873-BBB4-8BCBD02397B0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8879F176-0498-4873-BBB4-8BCBD02397B0}.Debug|x86.Build.0 = Debug|Any CPU
+		{8879F176-0498-4873-BBB4-8BCBD02397B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8879F176-0498-4873-BBB4-8BCBD02397B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8879F176-0498-4873-BBB4-8BCBD02397B0}.Release|x64.ActiveCfg = Release|Any CPU
+		{8879F176-0498-4873-BBB4-8BCBD02397B0}.Release|x64.Build.0 = Release|Any CPU
+		{8879F176-0498-4873-BBB4-8BCBD02397B0}.Release|x86.ActiveCfg = Release|Any CPU
+		{8879F176-0498-4873-BBB4-8BCBD02397B0}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,5 +111,6 @@ Global
 		{A76DD1AC-8DAA-4551-8C6B-E18D19AE6635} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{D31E3A9B-1033-45B3-BA0E-867C6CAF9FDA} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{C3440339-2202-42F2-9BF2-606A622D13BA} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{8879F176-0498-4873-BBB4-8BCBD02397B0} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

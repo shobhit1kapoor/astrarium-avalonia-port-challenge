@@ -74,13 +74,14 @@ Install the .NET 10 SDK, then run `dotnet run --project src/Astrarium.Avalonia/A
 
 ## Verification so far
 
-- `dotnet test Astrarium.Port.sln --configuration Release --no-restore`: 107 tests passed (92 retained Astrarium algorithm checks and 15 port-core checks), zero failures.
+- `dotnet test Astrarium.Port.sln --configuration Release`: 109 tests passed (92 retained Astrarium algorithm checks, 15 port-core checks, and 2 Avalonia UI layout checks), zero failures.
 - `dotnet build Astrarium.Port.sln --configuration Release --no-restore`: Windows-host Release solution build succeeded with zero warnings and errors.
 - The Preview 4 release build passed hosted CI [run #39035676876](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39035676876); its artifacts were verified, checksummed, and published in [Preview 4](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.4). The latest source commit `1eb8a0e` passed 107 tests, self-contained publishing, and actual `Window.Opened` checks for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64` in [CI run #39036819868](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39036819868).
+- The actual main and planner windows are also rendered at 100%, 125%, 150%, and 200% with Avalonia's headless platform at their minimum logical sizes. The tests check that layout bounds remain finite, the logical client size stays stable, and raster dimensions track the requested scale; captures at fractional and 200% scales were visually reviewed. This simulates Avalonia scaling and does not verify native Windows monitor changes.
 - The packaged Windows x64 Preview 4 app and planner opened locally. The planner generated darkness and target windows, and a recommendation returned to the chart at its best sampled UTC time. Minimum dimensions were reviewed for the 1,080 × 720 main window and 780 × 600 planner. Search, empty search, map/list selection, arrow navigation, pan, zoom, and reset were checked on the Windows host.
-- Linux and macOS launch checks are hosted-runner-only; no physical devices are claimed. Non-default Windows scaling has not been checked.
+- Linux and macOS launch checks are hosted-runner-only; no physical devices are claimed. Native Windows monitor scaling has not been checked.
 
-The observation planner was also exercised end to end on Windows: it generated darkness and target windows, scrolled the recommendation list at its minimum size, and returned a selected target to the chart at its best sampled UTC time. Non-default Windows scaling factors and physical macOS/Linux devices have not been checked.
+The observation planner was also exercised end to end on Windows: it generated darkness and target windows, scrolled the recommendation list at its minimum size, and returned a selected target to the chart at its best sampled UTC time. Native Windows display scaling and physical macOS/Linux devices have not been checked.
 
 This is a focused first port of Astrarium's observing workflow; it does not claim parity with the original plugin ecosystem.
 

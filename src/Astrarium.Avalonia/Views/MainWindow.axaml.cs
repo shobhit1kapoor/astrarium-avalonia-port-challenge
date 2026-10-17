@@ -10,10 +10,15 @@ public partial class MainWindow : Window
     private readonly SkySceneCalculator _calculator;
 
     public MainWindow()
+        : this(null)
+    {
+    }
+
+    public MainWindow(UserPreferencesStore? preferencesStore)
     {
         InitializeComponent();
         _calculator = new SkySceneCalculator(StarCatalog.LoadBundled());
-        DataContext = new MainViewModel(_calculator);
+        DataContext = new MainViewModel(_calculator, preferencesStore);
         Closing += (_, _) => (DataContext as MainViewModel)?.FlushPreferences();
         Opened += (_, _) =>
         {
