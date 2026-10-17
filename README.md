@@ -6,20 +6,20 @@ This repository contains a cross-platform Avalonia port of [Astrarium](https://g
 
 The observing workflow loads a licensed catalog of 5,070 naked-eye stars, computes local sky positions with Astrarium's VSOP87/ELP2000 algorithms, and draws a horizon chart with featured asterisms and solar-system bodies. It supports site/time changes, remembers observer/time/layer choices across restarts, and includes search and selection, keyboard object navigation, drag-to-pan, wheel zoom, Home reset, chart-layer toggles, and object details. Its observation planner searches a UTC observing window and reports astronomical darkness plus target windows filtered by minimum altitude, Sun altitude, magnitude, and minimum duration; choosing a result jumps to that target's best sampled time. The planner is bounded to the bundled stars, Moon, and planets rather than the original plugin catalog.
 
-The current working tree adds an offline observing-night planner to the chart, with target and darkness windows filtered by altitude, twilight, visual magnitude, and minimum duration. The updated source builds cleanly and passes 106 local tests; the planner has also been opened and reviewed on Windows. The newest published release is still [Preview 3](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.3), which predates the planner. The earlier four-RID hosted matrix therefore verifies the previous release, not this planner update; a new matrix is required before publishing the next release.
+The current [Preview 4 release](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.4) adds the offline observing-night planner, with target and darkness windows filtered by altitude, twilight, visual magnitude, and minimum duration. Commit `c2b63eb` passed all 106 tests, self-contained publishing, and actual window-open checks on Windows x64, Linux x64, macOS Intel, and macOS Apple silicon in [hosted CI run #39035676876](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39035676876). The packaged Windows archive and its planner were launched and reviewed locally; macOS and Linux were verified on hosted runners, not physical devices.
 
 ## Download and run
 
-These portable archives are self-contained .NET 10 builds; no .NET installation is required. Extract the archive for your operating system and launch the executable from the extracted folder. Preview 3 is the latest published build and does not yet include the working-tree observation planner.
+These portable archives are self-contained .NET 10 builds; no .NET installation is required. Extract the archive for your operating system and launch the executable from the extracted folder. Preview 4 is the latest published build.
 
 | Platform | Download | Launch |
 | --- | --- | --- |
-| Windows x64 | [astrarium-windows-x64.tar.gz](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/download/v0.1.0-preview.3/astrarium-windows-x64.tar.gz) | `Astrarium.Avalonia.exe` |
-| Linux x64 | [astrarium-linux-x64.tar.gz](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/download/v0.1.0-preview.3/astrarium-linux-x64.tar.gz) | `./Astrarium.Avalonia` in a desktop session |
-| macOS Intel | [astrarium-macos-x64.tar.gz](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/download/v0.1.0-preview.3/astrarium-macos-x64.tar.gz) | `./Astrarium.Avalonia` |
-| macOS Apple silicon | [astrarium-macos-arm64.tar.gz](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/download/v0.1.0-preview.3/astrarium-macos-arm64.tar.gz) | `./Astrarium.Avalonia` |
+| Windows x64 | [astrarium-windows-x64.tar.gz](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/download/v0.1.0-preview.4/astrarium-windows-x64.tar.gz) | `Astrarium.Avalonia.exe` |
+| Linux x64 | [astrarium-linux-x64.tar.gz](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/download/v0.1.0-preview.4/astrarium-linux-x64.tar.gz) | `./Astrarium.Avalonia` in a desktop session |
+| macOS Intel | [astrarium-macos-x64.tar.gz](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/download/v0.1.0-preview.4/astrarium-macos-x64.tar.gz) | `./Astrarium.Avalonia` |
+| macOS Apple silicon | [astrarium-macos-arm64.tar.gz](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/download/v0.1.0-preview.4/astrarium-macos-arm64.tar.gz) | `./Astrarium.Avalonia` |
 
-SHA-256 hashes for the four archives are in [`SHA256SUMS.txt`](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/download/v0.1.0-preview.3/SHA256SUMS.txt). These are portable archives rather than installers.
+SHA-256 hashes for the four archives are in [`SHA256SUMS.txt`](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/download/v0.1.0-preview.4/SHA256SUMS.txt). These are portable archives rather than installers.
 
 ## Before and after
 
@@ -45,7 +45,7 @@ The port preserves a useful observing loop—set a site and UTC time, inspect an
 
 ### Migration effort and cost
 
-This is a solo, AI-assisted port. The first public implementation commit was made at **11:57:17 UTC on October 17, 2026**; Preview 3 was published at **12:46:32 UTC**, an elapsed commit-to-preview window of **49 minutes 15 seconds**. This is a wall-clock window from the first public implementation commit to the verified desktop release, not active person-hours; no stopwatch was used, so active person-hours are not claimed. No paid API, dataset, or commercial UI component is required; the app is offline by default and uses the upstream MIT algorithms plus the separately licensed HYG subset.
+This is a solo, AI-assisted port. The first public implementation commit was made at **11:57:17 UTC on October 17, 2026**. Preview 3 was published at **12:46:32 UTC** (49 minutes 15 seconds later), and Preview 4 with the planner at **13:17:39 UTC** (1 hour 20 minutes 22 seconds after that first commit). These are elapsed wall-clock windows, not active person-hours; active hours were not tracked. No paid API, dataset, or commercial UI component is required. The app is offline by default and uses the upstream MIT algorithms plus the separately licensed HYG subset.
 
 ### What was harder than expected
 
@@ -74,13 +74,13 @@ Install the .NET 10 SDK, then run `dotnet run --project src/Astrarium.Avalonia/A
 
 ## Verification so far
 
-- `dotnet test Astrarium.Port.sln --configuration Release --no-restore`: 106 tests passed on the current working tree (92 retained Astrarium algorithm checks and 14 port-core checks), zero failures.
-- `dotnet build Astrarium.Port.sln --configuration Release --no-restore`: the current Windows-host Release solution build succeeded with zero warnings and errors.
-- Hosted CI run [#39033951488](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39033951488) passed solution tests, self-contained publishing, and actual `Window.Opened` checks on `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64` for the pre-planner source. Its artifacts are retained in the [Preview 3 release](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.3). It is not evidence for the current planner source.
-- The current working tree's main chart and planner have been opened on Windows; the planner generated a plan, displayed the darkness interval and recommendations, and was reviewed at its minimum window dimensions. The main window was also reviewed at its minimum dimensions in an earlier local UI pass. The previous interaction pass covered search, empty search, map/list selection, arrow navigation, pan, zoom, and reset.
-- The current planner source still needs its own four-RID hosted publish and `Window.Opened` matrix before a new downloadable release. Linux and macOS launches remain CI-only; no physical-device checks are claimed. Non-default Windows scaling has not been checked.
+- `dotnet test Astrarium.Port.sln --configuration Release --no-restore`: 106 tests passed (92 retained Astrarium algorithm checks and 14 port-core checks), zero failures.
+- `dotnet build Astrarium.Port.sln --configuration Release --no-restore`: Windows-host Release solution build succeeded with zero warnings and errors.
+- Hosted CI [run #39035676876](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39035676876) passed all tests, self-contained publishing, and actual `Window.Opened` checks for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64`. Its artifacts were verified, checksummed, and published in [Preview 4](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.4).
+- The packaged Windows x64 Preview 4 app and planner opened locally. The planner generated darkness and target windows, and a recommendation returned to the chart at its best sampled UTC time. Minimum dimensions were reviewed for the 1,080 × 720 main window and 780 × 600 planner. Search, empty search, map/list selection, arrow navigation, pan, zoom, and reset were checked on the Windows host.
+- Linux and macOS launch checks are hosted-runner-only; no physical devices are claimed. Non-default Windows scaling has not been checked.
 
-The observation planner was also exercised end to end on Windows: it generated darkness and target windows, scrolled the recommendation list at its minimum size, and returned a selected target to the chart at its best sampled UTC time. The main window was reviewed at its declared minimum dimensions (1,080 × 720); the planner was reviewed at 780 × 600. Non-default Windows scaling factors and physical macOS/Linux devices have not been checked.
+The observation planner was also exercised end to end on Windows: it generated darkness and target windows, scrolled the recommendation list at its minimum size, and returned a selected target to the chart at its best sampled UTC time. Non-default Windows scaling factors and physical macOS/Linux devices have not been checked.
 
 This is a focused first port of Astrarium's observing workflow; it does not claim parity with the original plugin ecosystem.
 

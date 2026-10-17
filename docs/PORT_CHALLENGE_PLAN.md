@@ -10,7 +10,7 @@ Deliver a credible, polished Avalonia port or rewrite of an application that exi
 - [x] Confirm the upstream MIT source license permits this open-source port; separately record the HYG catalog's CC BY-SA 4.0 obligations.
 - [x] Choose the open-source entry track.
 - [x] Keep the entry to one human contributor, within the three-person limit.
-- [x] Produce self-contained builds for Windows x64, Linux x64, macOS Intel, and macOS Apple silicon in the published baseline [Preview 3 release](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.3). The packaged Windows archive was launched and visually reviewed locally; Linux and macOS window checks ran on hosted runners. These artifacts predate the current working-tree planner.
+- [x] Produce self-contained builds for Windows x64, Linux x64, macOS Intel, and macOS Apple silicon with the planner in [Preview 4](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.4). The packaged Windows archive and planner were launched and visually reviewed locally; Linux and macOS window checks ran on hosted runners.
 - [x] Capture before-and-after screenshots; the source screenshot is linked at the pinned upstream revision rather than redistributed, and the Avalonia image is captured from the running port.
 - [x] Write a migration report covering elapsed release window and cost, what carried over, redesign, surprises, compromises, and runner-only platform checks; actively tracked person-hours were not recorded and are not claimed.
 - [ ] Submit through the official entry form before **2026-10-23 23:59 UTC** ( **2026-10-23 18:59 America/Chicago** ).
@@ -45,11 +45,9 @@ Astrarium is the selected **open-source** submission, targeting **Best Legacy Re
 
 - [x] Confirm the original Windows planetarium predates the challenge and its code license allows an open-source port.
 - [x] Establish a portable .NET/Avalonia solution, run the observing flow on Windows, and pass an initial hosted build/test/package matrix on Windows, macOS, and Linux.
-- [x] Pass the pre-planner source's full tests, self-contained publishing, and explicit `Window.Opened` marker check on Windows x64, Linux x64, macOS Intel, and macOS Apple silicon ([run #39033951488](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39033951488)); the packaged Windows archive also launched locally.
-- [ ] Pass the current planner source through the same full four-RID matrix; Preview 3 is not evidence for the planner build.
+- [x] Pass the planner source's full tests, self-contained publishing, and explicit `Window.Opened` marker check on Windows x64, Linux x64, macOS Intel, and macOS Apple silicon ([run #39035676876](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39035676876)); verify and publish the resulting artifacts in [Preview 4](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.4).
 - [x] Review the current observing flow at the minimum window size on Windows; keyboard navigation, search, map selection, panning, zoom, reset, and planner scrolling have been checked. The review used the host's default display scale.
-- [x] Publish baseline judge-downloadable release builds for each target OS. The public MIT source repository is available at [shobhit1kapoor/astrarium-avalonia-port-challenge](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge); current published binaries are in [Preview 3](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.3).
+- [x] Publish judge-downloadable release builds for each target OS. The public MIT source repository is available at [shobhit1kapoor/astrarium-avalonia-port-challenge](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge); current published binaries are in [Preview 4](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.4), with SHA-256 checksums.
 - [x] Finish the honest README migration report with observed elapsed engineering time, migration cost, and remaining limits.
 - [ ] Verify the current-source build at non-default Windows scaling levels if the environment permits.
-- [ ] Publish a new four-platform release containing the planner after its matrix passes.
 - [ ] Submit through the official form before the deadline and save the confirmation.
