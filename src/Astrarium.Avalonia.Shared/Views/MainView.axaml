@@ -152,6 +152,7 @@
                         <StackPanel Spacing="6">
                             <TextBlock Classes="kicker" Text="CHART LAYERS" />
                             <CheckBox Content="Star catalog" IsChecked="{Binding ShowStars}" Foreground="#CFD9E8" />
+                            <CheckBox Content="Deep-sky objects" IsChecked="{Binding ShowDeepSky}" Foreground="#CFD9E8" />
                             <CheckBox Content="Featured asterisms" IsChecked="{Binding ShowConstellations}" Foreground="#CFD9E8" />
                             <CheckBox Content="Sun, Moon &amp; planets" IsChecked="{Binding ShowBodies}" Foreground="#CFD9E8" />
                             <TextBlock Text="Cassiopeia · Orion · Big Dipper · Summer Triangle" FontSize="10" Classes="secondary" TextWrapping="Wrap" />
@@ -178,10 +179,11 @@
                         <views:SkyMapControl Scene="{Binding Scene}"
                                              SelectedObject="{Binding SelectedObject, Mode=TwoWay}"
                                              ShowStars="{Binding ShowStars}"
+                                             ShowDeepSky="{Binding ShowDeepSky}"
                                              ShowConstellations="{Binding ShowConstellations}"
                                              ShowBodies="{Binding ShowBodies}"
                                              Focusable="True"
-                                             AutomationProperties.Name="All-sky horizon map. Use the arrow keys to move between visible objects."
+                                             AutomationProperties.Name="All-sky horizon map with stars, deep-sky objects, and solar-system bodies. Use the arrow keys to move between visible objects."
                                              Margin="8" />
                         <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="22,0,0,20" Spacing="3" IsHitTestVisible="False">
                             <TextBlock Text="{Binding SkySummary}" FontSize="11" Foreground="#DAE7F5" />
@@ -201,7 +203,7 @@
                         <TextBlock Text="Targets above your horizon" FontSize="18" FontWeight="SemiBold" Foreground="#EDF3FC" />
                     </StackPanel>
 
-                    <TextBox Grid.Row="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search stars, planets, designations…" AutomationProperties.Name="Search stars, planets, and designations" Margin="0,0,0,9" />
+                    <TextBox Grid.Row="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search stars, nebulae, galaxies, planets…" AutomationProperties.Name="Search stars, deep-sky objects, planets, and designations" Margin="0,0,0,9" />
 
                     <Grid Grid.Row="2">
                         <Grid IsVisible="{Binding IsSearching}" RowDefinitions="Auto,*">
@@ -217,7 +219,7 @@
                                                 <TextBlock Text="{Binding Name}" FontSize="12" Foreground="#E7EEF9" />
                                                 <TextBlock Text="{Binding Designation}" FontSize="9" Foreground="#8094AE" />
                                             </StackPanel>
-                                            <TextBlock Grid.Column="1" Text="{Binding Kind}" FontSize="9" Foreground="#73CFC0" VerticalAlignment="Center" />
+                                            <TextBlock Grid.Column="1" Text="{Binding DisplayKind}" FontSize="9" Foreground="#73CFC0" VerticalAlignment="Center" />
                                         </Grid>
                                     </DataTemplate>
                                 </ListBox.ItemTemplate>
@@ -239,7 +241,7 @@
                                         <Grid ColumnDefinitions="*,Auto">
                                             <StackPanel Spacing="2">
                                                 <TextBlock Text="{Binding Name}" FontSize="12" Foreground="#E7EEF9" />
-                                                <TextBlock Text="{Binding Kind}" FontSize="9" Foreground="#8094AE" />
+                                                <TextBlock Text="{Binding DisplayKind}" FontSize="9" Foreground="#8094AE" />
                                             </StackPanel>
                                             <TextBlock Grid.Column="1" Text="{Binding AltitudeDegrees, StringFormat='{}{0:0}°'}" FontSize="10" Foreground="#A8BBD2" VerticalAlignment="Center" />
                                         </Grid>
@@ -255,10 +257,13 @@
                             <Grid ColumnDefinitions="*,Auto">
                                 <StackPanel Spacing="3">
                                     <TextBlock Text="SELECTED OBJECT" Classes="kicker" />
-                                    <TextBlock Text="{Binding SelectedObject.Name}" FontSize="16" FontWeight="SemiBold" Foreground="#F1F5FB" />
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="{Binding SelectedObject.Name}" FontSize="16" FontWeight="SemiBold" Foreground="#F1F5FB" />
+                                        <TextBlock Text="{Binding SelectedObject.Designation}" FontSize="9" Foreground="#8094AE" TextWrapping="Wrap" MaxHeight="28" />
+                                    </StackPanel>
                                 </StackPanel>
                                 <Border Grid.Column="1" Background="#193C42" CornerRadius="6" Padding="7,4" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding SelectedObject.Kind}" FontSize="9" Foreground="#9DE5D8" />
+                                    <TextBlock Text="{Binding SelectedObject.DisplayKind}" FontSize="9" Foreground="#9DE5D8" />
                                 </Border>
                             </Grid>
                             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="8">

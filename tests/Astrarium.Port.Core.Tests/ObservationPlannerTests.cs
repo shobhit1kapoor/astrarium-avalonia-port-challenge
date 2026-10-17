@@ -18,6 +18,8 @@ public sealed class ObservationPlannerTests
         Assert.HasCount(1, plan.DarkWindows);
         Assert.IsTrue(plan.DarkWindows[0].Duration > TimeSpan.FromHours(8));
         Assert.IsTrue(plan.Targets.Any(target => target.Target.Id == "hip:32349"));
+        Assert.IsTrue(plan.Targets.Any(target => target.Target.Kind == SkyObjectKind.DeepSky),
+            "Expected the bright deep-sky catalog to contribute qualifying observing targets.");
         Assert.HasCount(250, plan.Targets);
         Assert.AreEqual(100d, progress.Values[^1]);
         Assert.IsTrue(progress.Values.Zip(progress.Values.Skip(1), (first, second) => second >= first).All(isOrdered => isOrdered));

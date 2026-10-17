@@ -6,14 +6,28 @@ namespace Astrarium.Port.Core;
 /// Produces a topocentric sky scene using Astrarium's VSOP87, ELP2000, coordinate,
 /// precession, and visibility calculations.
 /// </summary>
-public sealed class SkySceneCalculator(StarCatalog catalog)
+public sealed class SkySceneCalculator
 {
+    private readonly StarCatalog _catalog;
+    private readonly DeepSkyCatalog _deepSkyCatalog;
+
     private const int Earth = 3;
     private static readonly (int Number, string Name)[] Planets =
     [
         (1, "Mercury"), (2, "Venus"), (4, "Mars"), (5, "Jupiter"),
         (6, "Saturn"), (7, "Uranus"), (8, "Neptune")
     ];
+
+    public SkySceneCalculator(StarCatalog catalog)
+        : this(catalog, DeepSkyCatalog.LoadBundled())
+    {
+    }
+
+    public SkySceneCalculator(StarCatalog catalog, DeepSkyCatalog deepSkyCatalog)
+    {
+        _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
+        _deepSkyCatalog = deepSkyCatalog ?? throw new ArgumentNullException(nameof(deepSkyCatalog));
+    }
 
     public SkyScene Calculate(DateTimeOffset instant, ObservingLocation location)
     {
@@ -31,20 +45,27 @@ public sealed class SkySceneCalculator(StarCatalog catalog)
             location.LatitudeDegrees,
             elevation: location.ElevationMeters,
             name: location.Name);
+        var precession = Precession.ElementsFK5(Date.EPOCH_J2000, jd);
 
-        var objects = new List<SkyChartObject>(catalog.Stars.Count + 9);
-        AddStars(objects, jd, apparentSiderealTime, observer);
+        var objects = new List<SkyChartObject>(_catalog.Stars.Count + _deepSkyCatalog.Objects.Count + 9);
+        AddStars(objects, jd, apparentSiderealTime, observer, _catalog, precession);
         AddSun(objects, jde, obliquity, nutation, apparentSiderealTime, observer);
         AddMoon(objects, jd, obliquity, nutation, apparentSiderealTime, observer);
         AddPlanets(objects, jde, obliquity, nutation, apparentSiderealTime, observer);
+        AddDeepSky(objects, apparentSiderealTime, observer, _deepSkyCatalog, precession);
 
         return new SkyScene(utc, location, objects, apparentSiderealTime);
     }
 
-    private void AddStars(List<SkyChartObject> objects, double jd, double siderealTime, CrdsGeographical observer)
+    private static void AddStars(
+        List<SkyChartObject> objects,
+        double jd,
+        double siderealTime,
+        CrdsGeographical observer,
+        StarCatalog catalog,
+        PrecessionalElements precession)
     {
         var yearsSinceJ2000 = (jd - Date.EPOCH_J2000) / 365.25;
-        var precession = Precession.ElementsFK5(Date.EPOCH_J2000, jd);
 
         foreach (var star in catalog.Stars)
         {
@@ -83,6 +104,35 @@ public sealed class SkySceneCalculator(StarCatalog catalog)
                 star.ColorIndex,
                 star.Designation,
                 star.Constellation));
+        }
+    }
+
+    private static void AddDeepSky(
+        List<SkyChartObject> objects,
+        double siderealTime,
+        CrdsGeographical observer,
+        DeepSkyCatalog catalog,
+        PrecessionalElements precession)
+    {
+        foreach (var item in catalog.Objects)
+        {
+            var j2000 = new CrdsEquatorial(item.RightAscensionDegreesJ2000, item.DeclinationDegreesJ2000);
+            var equatorial = Precession.GetEquatorialCoordinates(j2000, precession);
+            var horizontal = equatorial.ToHorizontal(observer, siderealTime);
+            objects.Add(new SkyChartObject(
+                item.Id,
+                item.Name,
+                SkyObjectKind.DeepSky,
+                equatorial.Alpha,
+                equatorial.Delta,
+                horizontal.Azimuth,
+                horizontal.Altitude,
+                item.Magnitude,
+                Designation: item.Designation,
+                Constellation: item.Constellation,
+                ObjectType: item.ObjectType,
+                MajorAxisArcMinutes: item.MajorAxisArcMinutes,
+                MinorAxisArcMinutes: item.MinorAxisArcMinutes));
         }
     }
 

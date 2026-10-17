@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Astrarium.Algorithms\Astrarium.Algorithms.csproj" />
     <EmbeddedResource Include="Data\stars.json" />
+    <EmbeddedResource Include="Data\deepsky.json" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -41,6 +41,7 @@ public partial class MainViewModel : ViewModelBase
         ShowStars = preferences?.ShowStars ?? true;
         ShowConstellations = preferences?.ShowConstellations ?? true;
         ShowBodies = preferences?.ShowBodies ?? true;
+        ShowDeepSky = preferences?.ShowDeepSky ?? true;
         _isRestoringPreferences = false;
 
         _ = RecalculateAsync(_referenceInstant);
@@ -89,6 +90,9 @@ public partial class MainViewModel : ViewModelBase
     private bool showBodies = true;
 
     [ObservableProperty]
+    private bool showDeepSky = true;
+
+    [ObservableProperty]
     private LocationPreset? selectedLocationPreset;
 
     public ObservableCollection<LocationPreset> LocationPresets { get; }
@@ -111,9 +115,11 @@ public partial class MainViewModel : ViewModelBase
 
     public int StarCount => Scene?.Objects.Count(item => item.Kind == SkyObjectKind.Star) ?? 0;
 
+    public int DeepSkyCount => Scene?.Objects.Count(item => item.Kind == SkyObjectKind.DeepSky) ?? 0;
+
     public string SceneSummary => Scene is null
         ? "Loading catalog and calculating positions"
-        : $"{StarCount:N0} stars  ·  VSOP87 planets  ·  ELP2000 Moon";
+        : $"{StarCount:N0} stars  ·  {DeepSkyCount:N0} deep-sky";
 
     public string TimeSummary => Scene is null
         ? "—"
@@ -130,7 +136,12 @@ public partial class MainViewModel : ViewModelBase
 
         VisibleTargets = value.Objects
             .Where(item => item.AltitudeDegrees >= 0 &&
-                (item.Kind != SkyObjectKind.Star || item.Magnitude <= 2.5))
+                (item.Kind switch
+                {
+                    SkyObjectKind.Star => item.Magnitude <= 2.5,
+                    SkyObjectKind.DeepSky => item.Magnitude <= 6.0,
+                    _ => true
+                }))
             .OrderByDescending(item => item.AltitudeDegrees)
             .Take(24)
             .ToArray();
@@ -151,10 +162,15 @@ public partial class MainViewModel : ViewModelBase
                 .Where(item => item.Kind == SkyObjectKind.Star && item.AltitudeDegrees > 15)
                 .OrderBy(item => item.Magnitude)
                 .FirstOrDefault()
+                ?? value.Objects
+                    .Where(item => item.Kind == SkyObjectKind.DeepSky && item.AltitudeDegrees > 15)
+                    .OrderBy(item => item.Magnitude)
+                    .FirstOrDefault()
                 ?? value.Objects.FirstOrDefault(item => item.Kind is SkyObjectKind.Planet or SkyObjectKind.Moon);
         }
 
         OnPropertyChanged(nameof(StarCount));
+        OnPropertyChanged(nameof(DeepSkyCount));
         OnPropertyChanged(nameof(SceneSummary));
         OnPropertyChanged(nameof(TimeSummary));
         OnPropertyChanged(nameof(SkySummary));
@@ -206,6 +222,8 @@ public partial class MainViewModel : ViewModelBase
     partial void OnShowConstellationsChanged(bool value) => SchedulePreferenceSave();
 
     partial void OnShowBodiesChanged(bool value) => SchedulePreferenceSave();
+
+    partial void OnShowDeepSkyChanged(bool value) => SchedulePreferenceSave();
 
     public string SelectedRightAscension => SelectedObject is null ? "—" : FormatRightAscension(SelectedObject.RightAscensionDegrees);
     public string SelectedDeclination => SelectedObject is null ? "—" : FormatSignedDegrees(SelectedObject.DeclinationDegrees);
@@ -360,7 +378,10 @@ public partial class MainViewModel : ViewModelBase
         _referenceInstant.AddHours(TimelineOffsetHours).ToUniversalTime(),
         ShowStars,
         ShowConstellations,
-        ShowBodies);
+        ShowBodies)
+    {
+        ShowDeepSky = ShowDeepSky
+    };
 
     private async Task RecalculateAsync(DateTimeOffset? instant = null)
     {

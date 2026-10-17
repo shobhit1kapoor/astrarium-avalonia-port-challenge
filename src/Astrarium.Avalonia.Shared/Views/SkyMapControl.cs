@@ -24,6 +24,9 @@ public sealed class SkyMapControl : Control
     public static readonly StyledProperty<bool> ShowBodiesProperty =
         AvaloniaProperty.Register<SkyMapControl, bool>(nameof(ShowBodies), true);
 
+    public static readonly StyledProperty<bool> ShowDeepSkyProperty =
+        AvaloniaProperty.Register<SkyMapControl, bool>(nameof(ShowDeepSky), true);
+
     public static readonly StyledProperty<double> ZoomFactorProperty =
         AvaloniaProperty.Register<SkyMapControl, double>(nameof(ZoomFactor), 1.0);
 
@@ -35,6 +38,7 @@ public sealed class SkyMapControl : Control
     private static readonly IPen GridPen = new Pen(new SolidColorBrush(Color.Parse("#31445C")), 0.8);
     private static readonly IPen ConstellationPen = new Pen(new SolidColorBrush(Color.Parse("#54BDAE"), 0.33), 1.15);
     private static readonly IPen SelectionPen = new Pen(new SolidColorBrush(Color.Parse("#7DE1CF"), 0.92), 1.5);
+    private static readonly IPen DeepSkyPen = new Pen(new SolidColorBrush(Color.Parse("#80B8FF"), 0.9), 1.25);
     private static readonly IBrush BodyLabelBrush = new SolidColorBrush(Color.Parse("#F3F7FF"));
     private static readonly IBrush CompassBrush = new SolidColorBrush(Color.Parse("#8FA5C0"));
     private static readonly int[][] AsterismSegments =
@@ -55,7 +59,7 @@ public sealed class SkyMapControl : Control
     static SkyMapControl()
     {
         AffectsRender<SkyMapControl>(SceneProperty, SelectedObjectProperty, ShowStarsProperty, ShowConstellationsProperty,
-            ShowBodiesProperty, ZoomFactorProperty, AzimuthOffsetDegreesProperty);
+            ShowBodiesProperty, ShowDeepSkyProperty, ZoomFactorProperty, AzimuthOffsetDegreesProperty);
     }
 
     public SkyScene? Scene
@@ -86,6 +90,12 @@ public sealed class SkyMapControl : Control
     {
         get => GetValue(ShowBodiesProperty);
         set => SetValue(ShowBodiesProperty, value);
+    }
+
+    public bool ShowDeepSky
+    {
+        get => GetValue(ShowDeepSkyProperty);
+        set => SetValue(ShowDeepSkyProperty, value);
     }
 
     public double ZoomFactor
@@ -148,6 +158,8 @@ public sealed class SkyMapControl : Control
 
             if (ShowBodies)
                 DrawBodies(context, scene, center, radius, occupiedLabels);
+            if (ShowDeepSky)
+                DrawDeepSky(context, scene, center, radius, occupiedLabels);
             if (ShowStars)
                 DrawStarLabels(context, scene, center, radius, occupiedLabels);
             DrawSelectedInfo(context, center, radius);
@@ -244,7 +256,7 @@ public sealed class SkyMapControl : Control
         var radius = diameter / 2;
         var center = new Point(Bounds.Width / 2, Bounds.Height / 2 + 5);
         var nearest = Scene.Objects
-            .Where(item => item.AltitudeDegrees >= 0)
+            .Where(item => item.AltitudeDegrees >= 0 && IsLayerVisible(item))
             .Select(item => (Item: item, Point: ToScreen(item, center, radius)))
             .Select(pair => (pair.Item, Distance: Math.Sqrt(Math.Pow(pair.Point.X - pointer.X, 2) + Math.Pow(pair.Point.Y - pointer.Y, 2))))
             .Where(pair => pair.Distance <= (pair.Item.Kind == SkyObjectKind.Star ? 12 : 18))
@@ -279,7 +291,7 @@ public sealed class SkyMapControl : Control
             return;
         }
 
-        if (Scene is null || SelectedObject is null || SelectedObject.AltitudeDegrees < 0)
+        if (Scene is null || SelectedObject is null || SelectedObject.AltitudeDegrees < 0 || !IsLayerVisible(SelectedObject))
             return;
 
         var direction = e.Key switch
@@ -301,8 +313,7 @@ public sealed class SkyMapControl : Control
             return;
 
         var next = Scene.Objects
-            .Where(item => item.Id != SelectedObject.Id && item.AltitudeDegrees >= 0 &&
-                (item.Kind == SkyObjectKind.Star ? ShowStars : ShowBodies))
+            .Where(item => item.Id != SelectedObject.Id && item.AltitudeDegrees >= 0 && IsLayerVisible(item))
             .Select(item => (Item: item, Point: ToScreen(item, center, radius)))
             .Where(pair => IsInsideChart(pair.Point, center, radius))
             .Select(pair => (pair.Item, Offset: pair.Point - origin))
@@ -391,7 +402,7 @@ public sealed class SkyMapControl : Control
         double radius,
         List<Rect> occupiedLabels)
     {
-        foreach (var body in scene.Objects.Where(item => item.Kind != SkyObjectKind.Star && item.AltitudeDegrees >= 0))
+        foreach (var body in scene.Objects.Where(item => IsSolarSystemBody(item.Kind) && item.AltitudeDegrees >= 0))
         {
             var point = ToScreen(body, center, radius);
             var color = body.Kind switch
@@ -411,6 +422,56 @@ public sealed class SkyMapControl : Control
             DrawSmartLabel(context, body.Name, point, 11.5, selected, center, radius, occupiedLabels);
         }
     }
+
+    private void DrawDeepSky(
+        DrawingContext context,
+        SkyScene scene,
+        Point center,
+        double radius,
+        List<Rect> occupiedLabels)
+    {
+        var targets = scene.Objects
+            .Where(item => item.Kind == SkyObjectKind.DeepSky && item.AltitudeDegrees >= 0)
+            .OrderByDescending(item => item.Id == SelectedObject?.Id)
+            .ThenBy(item => item.Magnitude);
+
+        foreach (var target in targets)
+        {
+            var point = ToScreen(target, center, radius);
+            var selected = target.Id == SelectedObject?.Id;
+            var majorDiameter = AngularSizeInChartPixels(target.MajorAxisArcMinutes, radius);
+            var minorDiameter = AngularSizeInChartPixels(target.MinorAxisArcMinutes ?? target.MajorAxisArcMinutes, radius);
+            var color = selected ? Color.Parse("#8CE8D8") : Color.Parse("#8CBFFF");
+            var markerPen = selected ? SelectionPen : DeepSkyPen;
+
+            context.DrawEllipse(null, markerPen, point, majorDiameter / 2, minorDiameter / 2);
+            context.DrawEllipse(new SolidColorBrush(color, selected ? 0.8 : 0.62), null, point, 1.4, 1.4);
+
+            if (selected || target.Magnitude <= 4.5)
+            {
+                DrawSmartLabel(context, target.Name, point, 10.5, selected, center, radius, occupiedLabels);
+            }
+        }
+    }
+
+    private double AngularSizeInChartPixels(double? axisArcMinutes, double radius)
+    {
+        if (axisArcMinutes is not { } arcMinutes || arcMinutes <= 0)
+            return 6;
+
+        var degrees = arcMinutes / 60.0;
+        return Math.Clamp(degrees / 90.0 * radius * ZoomFactor, 5, 26);
+    }
+
+    private static bool IsSolarSystemBody(SkyObjectKind kind) =>
+        kind is SkyObjectKind.Sun or SkyObjectKind.Moon or SkyObjectKind.Planet;
+
+    private bool IsLayerVisible(SkyChartObject item) => item.Kind switch
+    {
+        SkyObjectKind.Star => ShowStars,
+        SkyObjectKind.DeepSky => ShowDeepSky,
+        _ => ShowBodies
+    };
 
     private void DrawStarLabels(DrawingContext context, SkyScene scene, Point center, double radius, List<Rect> occupiedLabels)
     {
@@ -485,8 +546,7 @@ public sealed class SkyMapControl : Control
     {
         if (SelectedObject is null || SelectedObject.AltitudeDegrees < 0)
             return;
-        if ((SelectedObject.Kind == SkyObjectKind.Star && !ShowStars) ||
-            (SelectedObject.Kind != SkyObjectKind.Star && !ShowBodies))
+        if (!IsLayerVisible(SelectedObject))
             return;
 
         var point = ToScreen(SelectedObject, center, radius);

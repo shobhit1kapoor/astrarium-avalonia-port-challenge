@@ -11,6 +11,13 @@ Astrarium's application code is licensed under the repository MIT `LICENSE`. Dat
 - Source file SHA-256: `d9f69fd86bbf90a4e4d52b4c5c53eacfa6dfc0bfdef85bfd94f095e0bebe4ebd`.
 - Bundled derivative SHA-256: `16da6c55a078b2b30dcb423d3b602ea8a0d520b45290976a33c9000f84d6ff15`.
 
+## OpenNGC deep-sky catalog
+
+- Source: [OpenNGC](https://github.com/mattiaverga/OpenNGC), pinned to commit [`36cb178a0f69dba8bfc03a99c10512831edf1c6b`](https://github.com/mattiaverga/OpenNGC/tree/36cb178a0f69dba8bfc03a99c10512831edf1c6b), release `v20260501`. The upstream README identifies Mattia Verga and contributors and lists its NED, HyperLEDA, SIMBAD, HEASARC, Harold Corwin, and other provenance; consult that notice for the full source acknowledgements.
+- License: [Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)](https://creativecommons.org/licenses/by-sa/4.0/). This license applies to the adapted catalog data; the repository's MIT code license does not replace it.
+- Included derivative: 531 curated objects from the pinned `NGC.csv` and `addendum.csv`: supported galaxy, cluster, nebula, and related object types with a finite visual magnitude at or brighter than 10.0, plus Messier entries with known magnitude. The output excludes rows without supported object types, usable positions, or magnitude. It retains names and designations (including spaced and compact Messier/NGC/IC aliases), type, J2000 coordinates, visual magnitude, major/minor angular axes, and constellation. Right ascension is converted from hours to degrees; positions are precessed to the observing epoch at runtime. The generated `src/Astrarium.Port.Core/Data/deepsky.json` remains under CC BY-SA 4.0.
+- Reproduction: [`tools/prepare_deepsky_catalog.py`](../tools/prepare_deepsky_catalog.py) verifies the pinned CSV inputs before generating the compact JSON. `NGC.csv` SHA-256: `840fe0c9ee1332e551b2e722a0e92726cd7b157914a3d2177602832aadd3aa9e`; `addendum.csv` SHA-256: `1d8f0914e643ada325a5a94d88d8fefad6a4937a2f77cc34f21483af22b11983`. Bundled derivative SHA-256: `8a17d1bb547e5058f895826564ad81ee4e9715085d10e0685509b65f55074bb4`.
+
 ## Astrarium source code and algorithm coefficient files
 
 The retargeted calculation library is adapted from [Astrarium/Astrarium](https://github.com/Astrarium/Astrarium), inspected at commit `75cbdda75b0e6a51bbf601d08ab89bc471e6038a`, and remains under the upstream MIT license. See [`LICENSE`](../LICENSE). Its VSOP87 and ELP coefficient resources are retained with the source and are attributed in the upstream project; keep that provenance visible in redistributed source and documentation.

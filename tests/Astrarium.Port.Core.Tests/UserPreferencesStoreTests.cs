@@ -17,7 +17,10 @@ public sealed class UserPreferencesStoreTests
             new DateTimeOffset(2026, 10, 17, 21, 30, 0, TimeSpan.FromHours(-7)),
             ShowStars: false,
             ShowConstellations: true,
-            ShowBodies: false);
+            ShowBodies: false)
+        {
+            ShowDeepSky = false
+        };
 
         try
         {
@@ -32,6 +35,37 @@ public sealed class UserPreferencesStoreTests
             Assert.AreEqual(expected.ShowStars, actual.ShowStars);
             Assert.AreEqual(expected.ShowConstellations, actual.ShowConstellations);
             Assert.AreEqual(expected.ShowBodies, actual.ShowBodies);
+            Assert.AreEqual(expected.ShowDeepSky, actual.ShowDeepSky);
+        }
+        finally
+        {
+            DeletePreferencesDirectory(path);
+        }
+    }
+
+    [TestMethod]
+    public void LoadDefaultsDeepSkyLayerToVisibleForExistingPreferences()
+    {
+        var path = NewPreferencesPath();
+
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, """
+                {
+                  "SchemaVersion": 1,
+                  "Location": { "Name": "Greenwich", "LatitudeDegrees": 51.4779, "LongitudeEastDegrees": 0.0 },
+                  "InstantUtc": "2026-10-17T21:00:00Z",
+                  "ShowStars": true,
+                  "ShowConstellations": true,
+                  "ShowBodies": true
+                }
+                """);
+
+            var preferences = new UserPreferencesStore(path).Load();
+
+            Assert.IsNotNull(preferences);
+            Assert.IsTrue(preferences.ShowDeepSky);
         }
         finally
         {

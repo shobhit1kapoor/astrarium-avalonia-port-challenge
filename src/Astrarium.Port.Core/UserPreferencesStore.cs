@@ -44,9 +44,16 @@ public sealed class UserPreferencesStore : IUserPreferencesStore
             if (stream.Length > MaximumFileSizeBytes)
                 return null;
 
-            var preferences = JsonSerializer.Deserialize(stream, AstrariumJsonContext.Default.UserPreferences);
+            using var document = JsonDocument.Parse(stream);
+            var preferences = document.RootElement.Deserialize(AstrariumJsonContext.Default.UserPreferences);
             if (preferences is null)
                 return null;
+
+            if (!document.RootElement.EnumerateObject().Any(property =>
+                    property.Name.Equals(nameof(UserPreferences.ShowDeepSky), StringComparison.OrdinalIgnoreCase)))
+            {
+                preferences = preferences with { ShowDeepSky = true };
+            }
 
             preferences.Validate();
             return preferences with { InstantUtc = preferences.InstantUtc.ToUniversalTime() };

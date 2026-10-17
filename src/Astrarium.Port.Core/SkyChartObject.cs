@@ -5,7 +5,8 @@ public enum SkyObjectKind
     Star,
     Sun,
     Moon,
-    Planet
+    Planet,
+    DeepSky
 }
 
 public sealed record SkyChartObject(
@@ -19,4 +20,10 @@ public sealed record SkyChartObject(
     double Magnitude,
     double? ColorIndex = null,
     string? Designation = null,
-    string? Constellation = null);
+    string? Constellation = null,
+    string? ObjectType = null,
+    double? MajorAxisArcMinutes = null,
+    double? MinorAxisArcMinutes = null)
+{
+    public string DisplayKind => ObjectType ?? Kind.ToString();
+}

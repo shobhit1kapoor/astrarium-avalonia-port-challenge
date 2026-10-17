@@ -15,6 +15,9 @@ public sealed record UserPreferences(
 {
     public const int CurrentSchemaVersion = 1;
 
+    /// <summary>Whether deep-sky objects are drawn on the chart. Older preference files default to visible.</summary>
+    public bool ShowDeepSky { get; init; } = true;
+
     public void Validate()
     {
         if (SchemaVersion != CurrentSchemaVersion)

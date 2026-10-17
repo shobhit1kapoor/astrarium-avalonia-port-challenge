@@ -19,6 +19,21 @@ public sealed class SkySceneCalculatorTests
     }
 
     [TestMethod]
+    public void BundledDeepSkyCatalogContainsBrightNamedTargetsAndMessierAliases()
+    {
+        var catalog = DeepSkyCatalog.LoadBundled();
+
+        Assert.IsGreaterThanOrEqualTo(500, catalog.Objects.Count);
+        var andromeda = catalog.Objects.Single(item => item.Id == "openngc:NGC0224");
+        Assert.AreEqual("Andromeda Galaxy", andromeda.Name);
+        Assert.Contains("M 31", andromeda.Designation);
+        Assert.Contains("M31", andromeda.Designation);
+        Assert.Contains("NGC224", andromeda.Designation);
+        Assert.AreEqual(10.6847917, andromeda.RightAscensionDegreesJ2000, 1e-6);
+        Assert.IsTrue(catalog.Objects.Any(item => item.Designation.Contains("M 45", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
     public void CalculationProducesStarsSunMoonAndAllSevenPlanets()
     {
         var scene = CreateCalculator().Calculate(SampleInstant, ObservingLocation.Greenwich);
@@ -27,6 +42,8 @@ public sealed class SkySceneCalculatorTests
         Assert.AreEqual(1, scene.Objects.Count(item => item.Kind == SkyObjectKind.Sun));
         Assert.AreEqual(1, scene.Objects.Count(item => item.Kind == SkyObjectKind.Moon));
         Assert.AreEqual(7, scene.Objects.Count(item => item.Kind == SkyObjectKind.Planet));
+        Assert.AreEqual(DeepSkyCatalog.LoadBundled().Objects.Count, scene.Objects.Count(item => item.Kind == SkyObjectKind.DeepSky));
+        Assert.IsTrue(scene.Objects.Any(item => item.Id == "openngc:NGC0224" && item.Kind == SkyObjectKind.DeepSky));
         Assert.IsTrue(scene.Objects.All(IsFiniteAndInRange));
     }
 

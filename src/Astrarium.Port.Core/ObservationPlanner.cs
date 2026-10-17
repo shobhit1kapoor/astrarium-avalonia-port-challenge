@@ -50,7 +50,8 @@ public sealed class ObservationPlanner
                 for (var objectIndex = 0; objectIndex < scene.Objects.Count; objectIndex++)
                 {
                     var item = scene.Objects[objectIndex];
-                    if (item.Kind == SkyObjectKind.Sun || item.Kind == SkyObjectKind.Star && item.Magnitude > options.MaximumMagnitude)
+                    if (item.Kind == SkyObjectKind.Sun ||
+                        (item.Kind is SkyObjectKind.Star or SkyObjectKind.DeepSky) && item.Magnitude > options.MaximumMagnitude)
                         continue;
 
                     tracks.Add(new TargetTrack(objectIndex, item.Id, sampleTimes.Length));

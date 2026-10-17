@@ -43,6 +43,32 @@ public sealed class ObserverLocationViewModelTests
         Assert.Contains("Elevation must be between -500 m and 10,000 m", viewModel.StatusMessage);
     }
 
+    [TestMethod]
+    public void DeepSkyLayerDefaultsToVisibleAndPersistsChanges()
+    {
+        var preferences = new MemoryPreferencesStore();
+        var viewModel = new MainViewModel(new SkySceneCalculator(StarCatalog.LoadBundled()), preferences);
+
+        Assert.IsTrue(viewModel.ShowDeepSky);
+        viewModel.ShowDeepSky = false;
+        viewModel.FlushPreferences();
+
+        Assert.IsFalse(preferences.Saved!.ShowDeepSky);
+        var restored = new MainViewModel(new SkySceneCalculator(StarCatalog.LoadBundled()), preferences);
+        Assert.IsFalse(restored.ShowDeepSky);
+    }
+
+    [TestMethod]
+    public async Task SearchFindsDeepSkyTargetsByCompactMessierDesignation()
+    {
+        var viewModel = new MainViewModel(new SkySceneCalculator(StarCatalog.LoadBundled()), new MemoryPreferencesStore());
+        await WaitUntilIdleAsync(viewModel);
+
+        viewModel.SearchText = "M31";
+
+        Assert.IsTrue(viewModel.SearchResults.Any(item => item.Name == "Andromeda Galaxy"));
+    }
+
     private static async Task WaitUntilIdleAsync(MainViewModel viewModel)
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(30));
