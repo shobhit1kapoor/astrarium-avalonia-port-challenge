@@ -108,10 +108,16 @@
                             </ComboBox>
                         </StackPanel>
 
-                        <StackPanel Spacing="5">
-                            <TextBlock Text="SITE NAME" Classes="kicker" />
-                            <TextBox Text="{Binding LocationName}" PlaceholderText="Observing site" AutomationProperties.Name="Observing site name" />
-                        </StackPanel>
+                        <Grid ColumnDefinitions="2*,*" ColumnSpacing="9">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="SITE NAME" Classes="kicker" />
+                                <TextBox Text="{Binding LocationName}" PlaceholderText="Observing site" AutomationProperties.Name="Observing site name" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="5">
+                                <TextBlock Text="ELEVATION (m)" Classes="kicker" />
+                                <TextBox Text="{Binding ElevationText}" PlaceholderText="0" AutomationProperties.Name="Observing site elevation in meters" />
+                            </StackPanel>
+                        </Grid>
 
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="9">
                             <StackPanel Spacing="5">

@@ -28,6 +28,7 @@ public partial class MainViewModel : ViewModelBase
         LocationName = _location.Name;
         LatitudeText = _location.LatitudeDegrees.ToString("F4", CultureInfo.InvariantCulture);
         LongitudeText = _location.LongitudeEastDegrees.ToString("F4", CultureInfo.InvariantCulture);
+        ElevationText = _location.ElevationMeters.ToString("0.##", CultureInfo.InvariantCulture);
         LocationPresets = new ObservableCollection<LocationPreset>
         {
             new("Greenwich, UK", new ObservingLocation("Greenwich", 51.4779, 0.0, 46)),
@@ -59,6 +60,9 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private string longitudeText = string.Empty;
+
+    [ObservableProperty]
+    private string elevationText = string.Empty;
 
     [ObservableProperty]
     private string dateTimeText = string.Empty;
@@ -192,6 +196,7 @@ public partial class MainViewModel : ViewModelBase
         LocationName = _location.Name;
         LatitudeText = _location.LatitudeDegrees.ToString("F4", CultureInfo.InvariantCulture);
         LongitudeText = _location.LongitudeEastDegrees.ToString("F4", CultureInfo.InvariantCulture);
+        ElevationText = _location.ElevationMeters.ToString("0.##", CultureInfo.InvariantCulture);
         _ = RecalculateAsync();
         SchedulePreferenceSave();
     }
@@ -230,13 +235,14 @@ public partial class MainViewModel : ViewModelBase
     private async Task ApplyLocationAsync()
     {
         if (!double.TryParse(LatitudeText, NumberStyles.Float, CultureInfo.InvariantCulture, out var latitude) ||
-            !double.TryParse(LongitudeText, NumberStyles.Float, CultureInfo.InvariantCulture, out var longitude))
+            !double.TryParse(LongitudeText, NumberStyles.Float, CultureInfo.InvariantCulture, out var longitude) ||
+            !double.TryParse(ElevationText, NumberStyles.Float, CultureInfo.InvariantCulture, out var elevation))
         {
-            StatusMessage = "Enter latitude and longitude as decimal degrees.";
+            StatusMessage = "Enter latitude and longitude as decimal degrees, and elevation in meters.";
             return;
         }
 
-        var candidate = new ObservingLocation(LocationName.Trim(), latitude, longitude);
+        var candidate = new ObservingLocation(LocationName.Trim(), latitude, longitude, elevation);
         try
         {
             candidate.Validate();
