@@ -21,6 +21,13 @@ These portable archives are self-contained .NET 10 builds; no .NET installation 
 
 SHA-256 hashes for the four archives are in [`SHA256SUMS.txt`](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/download/v0.1.0-preview.5/SHA256SUMS.txt). These are portable archives rather than installers.
 
+## Try the observing flow
+
+1. Launch the app; it opens directly into an offline sky for Greenwich.
+2. Choose a quick location or enter decimal-degree coordinates, apply the site, and set a date and time in UTC.
+3. Search for a star or planet, select it from the horizon list, and inspect its altitude, azimuth, right ascension, declination, and magnitude. Drag the chart to pan, use the wheel to zoom, and press Home to reset.
+4. Select **Plan an observing night**, set a UTC time range and visibility limits, then build the plan. Select **View** on a recommendation to return to the chart at that target's best sampled time.
+
 ## Before and after
 
 The original screenshot is linked from the pinned upstream repository revision; it is not copied into this repository. The Avalonia image is a deterministic render of the production main window at its 1,080 × 720 minimum logical size; the packaged Windows app was launched and reviewed separately.
@@ -76,7 +83,7 @@ Install the .NET 10 SDK, then run `dotnet run --project src/Astrarium.Avalonia/A
 
 - `dotnet test Astrarium.Port.sln --configuration Release`: 109 tests passed (92 retained Astrarium algorithm checks, 15 port-core checks, and 2 Avalonia UI layout checks), zero failures.
 - `dotnet build Astrarium.Port.sln --configuration Release --no-restore`: Windows-host Release solution build succeeded with zero warnings and errors.
-- The latest source commit `8e84fa5` passed all 109 tests, self-contained publishing, and actual `Window.Opened` checks for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64` in [CI run #39038065940](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39038065940). Those exact CI packages are published, with verified SHA-256 checksums, in [Preview 5](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.5).
+- The Preview 5 application commit `8e84fa5` passed all 109 tests, self-contained publishing, and actual `Window.Opened` checks for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64` in [CI run #39038065940](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39038065940). Those exact packages are published, with verified SHA-256 checksums, in [Preview 5](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.5). The latest repository head `b17e3db`, which adds layout checks and refreshed judging evidence, also passed the 109-test four-RID matrix in [CI run #39039239143](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39039239143).
 - The actual main and planner windows are rendered at 100%, 125%, 150%, and 200% with Avalonia's headless platform at their minimum logical sizes. The main window is also checked at its 1,500 × 960 default logical size. Tests check accessible names on interactive fields and lists, finite layout bounds, stable logical client sizes, and raster dimensions that track the requested scale; captures at fractional and 200% scales were visually reviewed. This simulates Avalonia scaling and does not verify native Windows monitor changes.
 - The packaged Windows x64 Preview 4 app and planner opened locally. The planner generated darkness and target windows, and a recommendation returned to the chart at its best sampled UTC time. Minimum dimensions were reviewed for the 1,080 × 720 main window and 780 × 600 planner. Search, empty search, map/list selection, arrow navigation, pan, zoom, and reset were checked on the Windows host. Preview 5 carries the added accessibility names and passed the hosted Windows window-open check.
 - Linux and macOS launch checks are hosted-runner-only; no physical devices are claimed. Native Windows monitor scaling has not been checked.
