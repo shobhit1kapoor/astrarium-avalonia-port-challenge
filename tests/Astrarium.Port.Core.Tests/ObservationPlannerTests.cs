@@ -42,6 +42,41 @@ public sealed class ObservationPlannerTests
     }
 
     [TestMethod]
+    public void BuildFindsSouthernWinterTargetsAndNormalizesLocalInputToUtc()
+    {
+        var planner = CreatePlanner();
+        var location = new ObservingLocation("Sydney", -33.8688, 151.2093, 58);
+        var localStart = new DateTimeOffset(2026, 6, 20, 15, 0, 0, TimeSpan.FromHours(10));
+        var localEnd = new DateTimeOffset(2026, 6, 21, 10, 0, 0, TimeSpan.FromHours(10));
+        var options = new ObservationPlanOptions { SamplingInterval = TimeSpan.FromMinutes(15) };
+
+        var plan = planner.Build(localStart, localEnd, location, options);
+
+        Assert.AreEqual(TimeSpan.Zero, plan.StartUtc.Offset);
+        Assert.AreEqual(TimeSpan.Zero, plan.EndUtc.Offset);
+        Assert.AreEqual(new DateTimeOffset(2026, 6, 20, 5, 0, 0, TimeSpan.Zero), plan.StartUtc);
+        Assert.AreEqual(new DateTimeOffset(2026, 6, 21, 0, 0, 0, TimeSpan.Zero), plan.EndUtc);
+        Assert.HasCount(1, plan.DarkWindows);
+        Assert.IsTrue(plan.Targets.Any(target => target.Target.Name == "Antares"),
+            "Expected a prominent southern winter target in Sydney's winter plan.");
+        Assert.IsTrue(plan.Targets.All(target =>
+            target.Duration >= TimeSpan.FromMinutes(30) &&
+            target.BestAltitudeDegrees >= options.MinimumAltitudeDegrees &&
+            target.Target.Magnitude <= options.MaximumMagnitude));
+
+        var calculator = new SkySceneCalculator(StarCatalog.LoadBundled());
+        foreach (var window in plan.DarkWindows)
+        {
+            foreach (var edge in new[] { window.StartUtc, window.EndUtc })
+            {
+                var sunAltitude = calculator.Calculate(edge, location).Objects
+                    .Single(item => item.Kind == SkyObjectKind.Sun).AltitudeDegrees;
+                Assert.AreEqual(options.MaximumSunAltitudeDegrees, sunAltitude, 0.25);
+            }
+        }
+    }
+
+    [TestMethod]
     public void BuildRejectsInvalidRangesAndPlannerSettings()
     {
         var planner = CreatePlanner();

@@ -74,7 +74,7 @@ Install the .NET 10 SDK, then run `dotnet run --project src/Astrarium.Avalonia/A
 
 ## Verification so far
 
-- `dotnet test Astrarium.Port.sln --configuration Release --no-restore`: 106 tests passed (92 retained Astrarium algorithm checks and 14 port-core checks), zero failures.
+- `dotnet test Astrarium.Port.sln --configuration Release --no-restore`: 107 tests passed (92 retained Astrarium algorithm checks and 15 port-core checks), zero failures.
 - `dotnet build Astrarium.Port.sln --configuration Release --no-restore`: Windows-host Release solution build succeeded with zero warnings and errors.
 - Hosted CI [run #39035676876](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39035676876) passed all tests, self-contained publishing, and actual `Window.Opened` checks for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64`. Its artifacts were verified, checksummed, and published in [Preview 4](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.4).
 - The packaged Windows x64 Preview 4 app and planner opened locally. The planner generated darkness and target windows, and a recommendation returned to the chart at its best sampled UTC time. Minimum dimensions were reviewed for the 1,080 × 720 main window and 780 × 600 planner. Search, empty search, map/list selection, arrow navigation, pan, zoom, and reset were checked on the Windows host.
