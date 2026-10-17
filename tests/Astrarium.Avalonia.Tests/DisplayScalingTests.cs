@@ -16,14 +16,14 @@ public sealed class DisplayScalingTests
     private static readonly double[] TestScales = [1.0, 1.25, 1.5, 2.0];
 
     [TestMethod]
-    public void MainWindowLayoutsRenderAtCommonDisplayScales()
+    public async Task MainWindowLayoutsRenderAtCommonDisplayScales()
     {
-        using var session = HeadlessUnitTestSession.StartNew(typeof(HeadlessTestApplication));
+        await using var session = HeadlessUnitTestSession.StartNew(typeof(HeadlessTestApplication));
         var preferencesPath = Path.Combine(Path.GetTempPath(), "Astrarium.Avalonia.Tests", Guid.NewGuid().ToString("N"), "preferences.json");
 
         try
         {
-            session.Dispatch(() =>
+            await session.Dispatch(() =>
             {
                 var window = new MainWindow(new UserPreferencesStore(preferencesPath));
                 var viewModel = (MainViewModel)window.DataContext!;
@@ -49,11 +49,11 @@ public sealed class DisplayScalingTests
     }
 
     [TestMethod]
-    public void NightPlannerLayoutsRenderAtCommonDisplayScales()
+    public async Task NightPlannerLayoutsRenderAtCommonDisplayScales()
     {
-        using var session = HeadlessUnitTestSession.StartNew(typeof(HeadlessTestApplication));
+        await using var session = HeadlessUnitTestSession.StartNew(typeof(HeadlessTestApplication));
 
-        session.Dispatch(() =>
+        await session.Dispatch(() =>
         {
             var catalog = StarCatalog.LoadBundled();
             var calculator = new SkySceneCalculator(catalog);
@@ -153,8 +153,9 @@ public sealed class DisplayScalingTests
     {
         var unnamedFields = window.GetVisualDescendants().OfType<Control>()
             .Where(control => control is TextBox or ComboBox or Slider)
+            .Where(control => control.IsVisible)
             .Where(control => string.IsNullOrWhiteSpace(AutomationProperties.GetName(control)))
-            .Select(control => control.GetType().Name)
+            .Select(control => $"{control.GetType().Name} '{control.Name}'")
             .ToArray();
         Assert.IsEmpty(unnamedFields,
             $"Interactive fields must expose an accessible name: {string.Join(", ", unnamedFields)}.");
