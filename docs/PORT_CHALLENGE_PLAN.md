@@ -10,7 +10,7 @@ Deliver a credible, polished Avalonia port or rewrite of an application that exi
 - [x] Confirm the upstream MIT source license permits this open-source port; separately record the HYG catalog's CC BY-SA 4.0 obligations.
 - [x] Choose the open-source entry track.
 - [x] Keep the entry to one human contributor, within the three-person limit.
-- [x] Produce self-contained builds for Windows x64, Linux x64, macOS Intel, and macOS Apple silicon in [preview release v0.1.0-preview.1](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.1). Windows was also launched and visually reviewed locally.
+- [x] Produce self-contained builds for Windows x64, Linux x64, macOS Intel, and macOS Apple silicon in [preview release v0.1.0-preview.3](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.3). The packaged Windows archive was launched and visually reviewed locally; Linux and macOS window checks ran on hosted runners.
 - [x] Capture before-and-after screenshots; the source screenshot is linked at the pinned upstream revision rather than redistributed, and the Avalonia image is captured from the running port.
 - [x] Write a migration report covering elapsed release window and cost, what carried over, redesign, surprises, compromises, and runner-only platform checks; actively tracked person-hours were not recorded and are not claimed.
 - [ ] Submit through the official entry form before **2026-10-23 23:59 UTC** ( **2026-10-23 18:59 America/Chicago** ).
@@ -45,9 +45,8 @@ Astrarium is the selected **open-source** submission, targeting **Best Legacy Re
 
 - [x] Confirm the original Windows planetarium predates the challenge and its code license allows an open-source port.
 - [x] Establish a portable .NET/Avalonia solution, run the observing flow on Windows, and pass an initial hosted build/test/package matrix on Windows, macOS, and Linux.
-- [x] Pass hosted tests, packaging, and process-live startup checks on Windows, Linux, macOS Intel, and macOS Apple silicon ([run #39032101742](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39032101742)); record runner-only versus physical checks.
-- [ ] Pass the current-code matrix with its explicit `Window.Opened` marker, then update the preview archives. The earlier run verifies process startup, not a visible window.
+- [x] Pass the current source's full tests, self-contained publishing, and explicit `Window.Opened` marker check on Windows x64, Linux x64, macOS Intel, and macOS Apple silicon ([run #39033579633](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39033579633)); the packaged Windows archive also launched locally.
 - [ ] Review the focused observing flow at the minimum window size and common scaling levels; keyboard arrow navigation, search, map selection, panning, zoom, and reset have been checked on Windows.
-- [x] Publish judge-downloadable release builds for each target OS. The public MIT source repository is available at [shobhit1kapoor/astrarium-avalonia-port-challenge](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge).
+- [x] Publish judge-downloadable release builds for each target OS. The public MIT source repository is available at [shobhit1kapoor/astrarium-avalonia-port-challenge](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge), with the latest binaries in [Preview 3](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.3).
 - [x] Finish the honest README migration report with observed elapsed engineering time, migration cost, and remaining limits.
 - [ ] Submit through the official form before the deadline and save the confirmation.
