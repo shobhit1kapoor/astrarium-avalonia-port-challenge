@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 
 namespace Astrarium.Port.Core;
@@ -7,6 +8,7 @@ namespace Astrarium.Port.Core;
 /// </summary>
 public sealed class UserPreferencesStore
 {
+    private const long MaximumFileSizeBytes = 64 * 1024;
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
     private readonly string _path;
 
@@ -33,6 +35,9 @@ public sealed class UserPreferencesStore
         try
         {
             using var stream = File.OpenRead(_path);
+            if (stream.Length > MaximumFileSizeBytes)
+                return null;
+
             var preferences = JsonSerializer.Deserialize<UserPreferences>(stream, JsonOptions);
             if (preferences is null)
                 return null;
@@ -41,7 +46,7 @@ public sealed class UserPreferencesStore
             return preferences with { InstantUtc = preferences.InstantUtc.ToUniversalTime() };
         }
         catch (Exception error) when (error is IOException or UnauthorizedAccessException or JsonException or
-                                     ArgumentException or NotSupportedException)
+                                     ArgumentException or NotSupportedException or System.Security.SecurityException)
         {
             return null;
         }
@@ -51,6 +56,8 @@ public sealed class UserPreferencesStore
     {
         ArgumentNullException.ThrowIfNull(preferences);
         preferences.Validate();
+        if (Encoding.UTF8.GetByteCount(preferences.Location.Name) > MaximumFileSizeBytes)
+            throw new InvalidDataException("The observer name exceeds the supported preferences file size.");
 
         var directory = Path.GetDirectoryName(_path)
             ?? throw new InvalidOperationException("The preferences path has no parent folder.");
@@ -59,8 +66,14 @@ public sealed class UserPreferencesStore
         var temporaryPath = $"{_path}.{Guid.NewGuid():N}.tmp";
         try
         {
-            using (var stream = File.Create(temporaryPath))
+            using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
                 JsonSerializer.Serialize(stream, preferences with { InstantUtc = preferences.InstantUtc.ToUniversalTime() }, JsonOptions);
+                if (stream.Length > MaximumFileSizeBytes)
+                    throw new InvalidDataException("The preferences exceed the supported file size.");
+
+                stream.Flush(flushToDisk: true);
+            }
 
             File.Move(temporaryPath, _path, overwrite: true);
         }

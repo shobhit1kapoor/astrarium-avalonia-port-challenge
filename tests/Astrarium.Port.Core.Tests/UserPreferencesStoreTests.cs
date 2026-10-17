@@ -1,6 +1,6 @@
+using System.Text.Json;
 using Astrarium.Port.Core;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Text.Json;
 
 namespace Astrarium.Port.Core.Tests;
 
@@ -52,6 +52,119 @@ public sealed class UserPreferencesStoreTests
 
             var unsupported = new UserPreferences(99, ObservingLocation.Greenwich, DateTimeOffset.UtcNow, true, true, true);
             File.WriteAllText(path, JsonSerializer.Serialize(unsupported));
+            Assert.IsNull(new UserPreferencesStore(path).Load());
+        }
+        finally
+        {
+            DeletePreferencesDirectory(path);
+        }
+    }
+
+    [TestMethod]
+    public void LoadIgnoresOversizedPreferences()
+    {
+        var path = NewPreferencesPath();
+
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, new string(' ', 64 * 1024 + 1));
+
+            Assert.IsNull(new UserPreferencesStore(path).Load());
+        }
+        finally
+        {
+            DeletePreferencesDirectory(path);
+        }
+    }
+
+    [TestMethod]
+    public void SaveRejectsOversizedObserverNameWithoutReplacingExistingPreferences()
+    {
+        var path = NewPreferencesPath();
+
+        try
+        {
+            var store = new UserPreferencesStore(path);
+            var original = new UserPreferences(
+                UserPreferences.CurrentSchemaVersion,
+                ObservingLocation.Greenwich,
+                DateTimeOffset.UtcNow,
+                true,
+                true,
+                true);
+            store.Save(original);
+            var originalBytes = File.ReadAllBytes(path);
+            var oversized = original with
+            {
+                Location = new ObservingLocation(new string('x', 64 * 1024 + 1), 0, 0)
+            };
+
+            Assert.ThrowsExactly<InvalidDataException>(() => store.Save(oversized));
+            CollectionAssert.AreEqual(originalBytes, File.ReadAllBytes(path));
+        }
+        finally
+        {
+            DeletePreferencesDirectory(path);
+        }
+    }
+
+    [TestMethod]
+    public void LoadIgnoresNullLocation()
+    {
+        var path = NewPreferencesPath();
+
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, """
+                {
+                  "SchemaVersion": 1,
+                  "Location": null,
+                  "InstantUtc": "2026-10-17T21:00:00Z",
+                  "ShowStars": true,
+                  "ShowConstellations": true,
+                  "ShowBodies": true
+                }
+                """);
+
+            Assert.IsNull(new UserPreferencesStore(path).Load());
+        }
+        finally
+        {
+            DeletePreferencesDirectory(path);
+        }
+    }
+
+    [TestMethod]
+    public void LoadIgnoresPreferencesWithMissingRequiredFields()
+    {
+        var path = NewPreferencesPath();
+
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, """
+                {
+                  "SchemaVersion": 1,
+                  "Location": { "Name": "Greenwich", "LatitudeDegrees": 51.4779, "LongitudeEastDegrees": 0.0 },
+                  "InstantUtc": "2026-10-17T21:00:00Z",
+                  "ShowStars": true,
+                  "ShowConstellations": true
+                }
+                """);
+            Assert.IsNull(new UserPreferencesStore(path).Load());
+
+            File.WriteAllText(path, """
+                {
+                  "SchemaVersion": 1,
+                  "Location": { "Name": "Greenwich", "LongitudeEastDegrees": 0.0 },
+                  "InstantUtc": "2026-10-17T21:00:00Z",
+                  "ShowStars": true,
+                  "ShowConstellations": true,
+                  "ShowBodies": true
+                }
+                """);
             Assert.IsNull(new UserPreferencesStore(path).Load());
         }
         finally

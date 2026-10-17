@@ -1,9 +1,15 @@
+using System.Text.Json.Serialization;
+
 namespace Astrarium.Port.Core;
 
 /// <summary>
 /// A geographic observing site. Longitude is stored positive east, following ISO 6709.
 /// </summary>
-public sealed record ObservingLocation(string Name, double LatitudeDegrees, double LongitudeEastDegrees, double ElevationMeters = 0)
+public sealed record ObservingLocation(
+    [property: JsonRequired] string Name,
+    [property: JsonRequired] double LatitudeDegrees,
+    [property: JsonRequired] double LongitudeEastDegrees,
+    double ElevationMeters = 0)
 {
     public static ObservingLocation Greenwich { get; } = new("Greenwich", 51.4779, 0.0, 46);
 
