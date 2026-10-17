@@ -26,10 +26,7 @@ public sealed class StarCatalog
     {
         ArgumentNullException.ThrowIfNull(source);
 
-        var stars = JsonSerializer.Deserialize<StarCatalogEntry[]>(source, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var stars = JsonSerializer.Deserialize(source, AstrariumJsonContext.Default.StarCatalogEntryArray);
 
         if (stars is null || stars.Length == 0)
             throw new InvalidDataException("The bundled star catalog is empty or invalid.");

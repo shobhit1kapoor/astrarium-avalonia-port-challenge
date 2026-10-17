@@ -9,7 +9,7 @@ namespace Astrarium.Avalonia.ViewModels;
 public partial class MainViewModel : ViewModelBase
 {
     private readonly SkySceneCalculator _calculator;
-    private readonly UserPreferencesStore _preferencesStore;
+    private readonly IUserPreferencesStore _preferencesStore;
     private readonly SemaphoreSlim _calculationGate = new(1, 1);
     private CancellationTokenSource? _pendingCalculation;
     private CancellationTokenSource? _pendingPreferencesSave;
@@ -17,7 +17,7 @@ public partial class MainViewModel : ViewModelBase
     private ObservingLocation _location = ObservingLocation.Greenwich;
     private bool _isRestoringPreferences = true;
 
-    public MainViewModel(SkySceneCalculator calculator, UserPreferencesStore? preferencesStore = null)
+    public MainViewModel(SkySceneCalculator calculator, IUserPreferencesStore? preferencesStore = null)
     {
         _calculator = calculator;
         _preferencesStore = preferencesStore ?? new UserPreferencesStore();

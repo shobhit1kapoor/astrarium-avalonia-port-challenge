@@ -1,0 +1,164 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Astrarium.Avalonia.ViewModels"
+             x:Class="Astrarium.Avalonia.Views.NightPlannerView"
+             x:DataType="vm:NightPlannerViewModel"
+             Background="#080E19">
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.kicker">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#91A6C3" />
+        </Style>
+        <Style Selector="TextBlock.secondary">
+            <Setter Property="Foreground" Value="#91A2BB" />
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#0B1422" />
+            <Setter Property="BorderBrush" Value="#27384F" />
+            <Setter Property="Foreground" Value="#E7EEF9" />
+            <Setter Property="CaretBrush" Value="#79D8C8" />
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Padding" Value="10,8" />
+        </Style>
+        <Style Selector="Button.action">
+            <Setter Property="Background" Value="#173C42" />
+            <Setter Property="Foreground" Value="#B9F1E7" />
+            <Setter Property="BorderBrush" Value="#286D6C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Padding" Value="12,9" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.quiet">
+            <Setter Property="Background" Value="#121D2C" />
+            <Setter Property="Foreground" Value="#D4DFEF" />
+            <Setter Property="BorderBrush" Value="#26364C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Padding" Value="10,8" />
+        </Style>
+        <Style Selector="ListBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Margin" Value="0,2" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="#183440" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,*,Auto" Margin="22,18,22,16" RowSpacing="13">
+        <Grid ColumnDefinitions="*,Auto">
+            <StackPanel Spacing="4">
+                <TextBlock Classes="kicker" Text="ASTRARIUM · OBSERVATION PLANNER" Foreground="#8DE4D4" />
+                <TextBlock Text="Plan a night under this sky" FontSize="25" FontWeight="SemiBold" Foreground="#EDF3FC" />
+                <TextBlock Text="{Binding LocationSummary}" FontSize="11" Classes="secondary" />
+            </StackPanel>
+            <Border Grid.Column="1" Background="#111D2C" BorderBrush="#26384F" BorderThickness="1" CornerRadius="10" Padding="12,9" VerticalAlignment="Center">
+                <StackPanel Spacing="3">
+                    <TextBlock Text="ALL TIMES" Classes="kicker" />
+                    <TextBlock Text="UTC · 24-hour clock" FontSize="11" Foreground="#DCE7F5" />
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="1" Background="#0E1725" BorderBrush="#1E2D40" BorderThickness="1" CornerRadius="14" Padding="14">
+            <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="kicker" Text="OBSERVING WINDOW · START (UTC)" />
+                        <TextBox Text="{Binding StartUtcText}" PlaceholderText="YYYY-MM-DD HH:mm" AutomationProperties.Name="Observing window start time in UTC" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock Classes="kicker" Text="END (UTC)" />
+                        <TextBox Text="{Binding EndUtcText}" PlaceholderText="YYYY-MM-DD HH:mm" AutomationProperties.Name="Observing window end time in UTC" />
+                    </StackPanel>
+                </Grid>
+                <Grid Grid.Row="1" ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="kicker" Text="MIN TARGET ALTITUDE · °" />
+                        <TextBox Text="{Binding MinimumAltitudeText}" AutomationProperties.Name="Minimum target altitude in degrees" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Spacing="4">
+                        <TextBlock Classes="kicker" Text="SUN AT OR BELOW · °" />
+                        <TextBox Text="{Binding MaximumSunAltitudeText}" AutomationProperties.Name="Maximum Sun altitude in degrees" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Spacing="4">
+                        <TextBlock Classes="kicker" Text="MIN WINDOW · MINUTES" />
+                        <TextBox Text="{Binding MinimumWindowMinutesText}" AutomationProperties.Name="Minimum qualifying window in minutes" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="3" Spacing="4">
+                        <TextBlock Classes="kicker" Text="MAX TARGET MAGNITUDE" />
+                        <TextBox Text="{Binding MaximumMagnitudeText}" AutomationProperties.Name="Maximum target visual magnitude" />
+                    </StackPanel>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,*,Auto" ColumnSpacing="9">
+                    <Button Classes="action" Content="Build observing plan" Command="{Binding BuildPlanCommand}" />
+                    <Button Grid.Column="1" Classes="quiet" Content="Cancel" Command="{Binding CancelPlanningCommand}" IsVisible="{Binding IsBusy}" />
+                    <TextBlock Grid.Column="2" Text="Stars, the Moon and planets · bundled offline data" FontSize="10" Classes="secondary" VerticalAlignment="Center" />
+                    <ProgressBar Grid.Column="3" Width="100" Height="6" Minimum="0" Maximum="100" Value="{Binding ProgressPercent}" IsVisible="{Binding IsBusy}" VerticalAlignment="Center" AutomationProperties.Name="Observing plan progress" />
+                </Grid>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="2" Background="#10202B" BorderBrush="#28504E" BorderThickness="1" CornerRadius="12" Padding="14,11">
+            <StackPanel Spacing="5">
+                <TextBlock Classes="kicker" Text="ASTRONOMICAL DARKNESS" Foreground="#8DE4D4" />
+                <TextBlock Text="{Binding DarknessSummary}" FontSize="12" Foreground="#E4EDF8" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding PlanSummary}" FontSize="10" Classes="secondary" />
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="3" Background="#0E1725" BorderBrush="#1E2D40" BorderThickness="1" CornerRadius="14" Padding="14">
+            <Grid RowDefinitions="Auto,*">
+                <Grid ColumnDefinitions="*,Auto,Auto" Margin="4,1,12,8">
+                    <TextBlock Text="RECOMMENDED TARGETS" Classes="kicker" />
+                    <TextBlock Grid.Column="1" Text="BEST WINDOW" Classes="kicker" Margin="10,0" />
+                    <TextBlock Grid.Column="2" Text="" Width="58" />
+                </Grid>
+                <Grid Grid.Row="1">
+                    <ListBox ItemsSource="{Binding Targets}" IsVisible="{Binding HasTargets}" AutomationProperties.Name="Recommended observing targets">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="vm:PlannedObservationItem">
+                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="14">
+                                    <StackPanel Spacing="3" VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="#E7EEF9" />
+                                            <Border Background="#193C42" CornerRadius="5" Padding="6,2">
+                                                <TextBlock Text="{Binding Kind}" FontSize="8" Foreground="#9DE5D8" />
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding Conditions}" FontSize="9" Foreground="#8D9FB7" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <TextBlock Text="{Binding Window}" FontSize="10" Foreground="#D7E3F2" HorizontalAlignment="Right" />
+                                        <TextBlock Text="{Binding BestTime}" FontSize="9" Classes="secondary" HorizontalAlignment="Right" />
+                                    </StackPanel>
+                                    <Button Grid.Column="2" Classes="quiet" Content="View" Click="OnShowTargetClicked" VerticalAlignment="Center" AutomationProperties.Name="{Binding ShowTargetLabel}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel IsVisible="{Binding HasNoTargets}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="7" MaxWidth="440">
+                        <TextBlock Text="No targets meet these conditions" FontSize="17" FontWeight="SemiBold" Foreground="#EDF3FC" HorizontalAlignment="Center" />
+                        <TextBlock Text="Try lowering the minimum altitude, allowing a brighter twilight, or extending the observing window. For high-latitude dates, the Sun may not reach your selected darkness threshold." FontSize="11" Classes="secondary" TextWrapping="Wrap" TextAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="Enter the time range and observing conditions, then build a plan." IsVisible="{Binding !HasPlan}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="11" Classes="secondary" />
+                </Grid>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="4" ColumnDefinitions="*,Auto">
+            <TextBlock Text="{Binding StatusMessage}" FontSize="10" Classes="secondary" VerticalAlignment="Center" TextWrapping="Wrap" />
+            <Button Grid.Column="1" Classes="quiet" Content="Close" Click="OnCloseClicked" />
+        </Grid>
+    </Grid>
+</UserControl>

@@ -1,0 +1,307 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Astrarium.Avalonia.ViewModels"
+             xmlns:core="using:Astrarium.Port.Core"
+             xmlns:views="using:Astrarium.Avalonia.Views"
+             x:Class="Astrarium.Avalonia.Views.MainView"
+             x:DataType="vm:MainViewModel"
+             Background="#080E19">
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.kicker">
+            <Setter Property="FontSize" Value="10" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#91A6C3" />
+        </Style>
+        <Style Selector="TextBlock.secondary">
+            <Setter Property="Foreground" Value="#91A2BB" />
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#0B1422" />
+            <Setter Property="BorderBrush" Value="#27384F" />
+            <Setter Property="Foreground" Value="#E7EEF9" />
+            <Setter Property="CaretBrush" Value="#79D8C8" />
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Padding" Value="10,8" />
+        </Style>
+        <Style Selector="Button.action">
+            <Setter Property="Background" Value="#173C42" />
+            <Setter Property="Foreground" Value="#B9F1E7" />
+            <Setter Property="BorderBrush" Value="#286D6C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Padding" Value="12,9" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.quiet">
+            <Setter Property="Background" Value="#121D2C" />
+            <Setter Property="Foreground" Value="#D4DFEF" />
+            <Setter Property="BorderBrush" Value="#26364C" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="9" />
+            <Setter Property="Padding" Value="10,8" />
+        </Style>
+        <Style Selector="ListBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="9,8" />
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Margin" Value="0,1" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="#183440" />
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <Grid RowDefinitions="68,*,92">
+        <Border Grid.Row="0" Background="#0A111D" BorderBrush="#1A293A" BorderThickness="0,0,0,1">
+            <Grid ColumnDefinitions="Auto,*,Auto" Margin="26,0">
+                <StackPanel Orientation="Horizontal" Spacing="13" VerticalAlignment="Center">
+                    <Border Width="38" Height="38" CornerRadius="12" Background="#17383F" BorderBrush="#2B6868" BorderThickness="1">
+                        <TextBlock Text="✦" Foreground="#8DE4D4" FontSize="21" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Spacing="0" VerticalAlignment="Center">
+                        <TextBlock Text="ASTRARIUM" FontSize="16" FontWeight="Bold" Foreground="#F1F5FC" />
+                        <TextBlock Text="THE LIVING SKY" FontSize="9" Foreground="#85A3B6" />
+                    </StackPanel>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Ellipse Width="7" Height="7" Fill="#72D8C7" />
+                    <TextBlock Text="OBSERVING SESSION" FontSize="10" FontWeight="SemiBold" Foreground="#B5C5D8" />
+                    <Border Background="#121D2B" CornerRadius="8" Padding="10,5" Margin="9,0,0,0">
+                        <TextBlock Text="{Binding TimeSummary}" FontSize="11" Foreground="#E1EAF6" />
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="10" Foreground="#92A6BF" VerticalAlignment="Center" MaxWidth="290" TextTrimming="CharacterEllipsis" />
+                    <Border Width="8" Height="8" CornerRadius="4" Background="#6DD6C5" IsVisible="{Binding !IsBusy}" />
+                    <ProgressBar Width="72" Height="4" IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" ColumnDefinitions="252,*,314" Margin="18,16,18,10">
+            <Border Grid.Column="0" Background="#0E1725" BorderBrush="#1E2D40" BorderThickness="1" CornerRadius="16" Padding="18">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="10">
+                        <StackPanel Spacing="5">
+                            <TextBlock Classes="kicker" Text="OBSERVING SITE" />
+                            <TextBlock Text="Set your horizon" FontSize="19" FontWeight="SemiBold" Foreground="#EDF3FC" />
+                            <TextBlock Text="The sky is recalculated for this location." Classes="secondary" FontSize="11" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="QUICK LOCATIONS" Classes="kicker" />
+                            <ComboBox ItemsSource="{Binding LocationPresets}" SelectedItem="{Binding SelectedLocationPreset}" PlaceholderText="Choose a site" AutomationProperties.Name="Quick observing site" Background="#0B1422" BorderBrush="#27384F" Foreground="#E7EEF9" CornerRadius="9" Padding="9,7">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="vm:LocationPreset">
+                                        <TextBlock Text="{Binding Label}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Text="SITE NAME" Classes="kicker" />
+                            <TextBox Text="{Binding LocationName}" PlaceholderText="Observing site" AutomationProperties.Name="Observing site name" />
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="9">
+                            <StackPanel Spacing="5">
+                                <TextBlock Text="LATITUDE" Classes="kicker" />
+                                <TextBox Text="{Binding LatitudeText}" PlaceholderText="51.4779" AutomationProperties.Name="Latitude in decimal degrees" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Spacing="5">
+                                <TextBlock Text="LONGITUDE" Classes="kicker" />
+                                <TextBox Text="{Binding LongitudeText}" PlaceholderText="0.0000" AutomationProperties.Name="Longitude east in decimal degrees" />
+                            </StackPanel>
+                        </Grid>
+                        <TextBlock Text="Decimal degrees · east is positive" FontSize="10" Classes="secondary" Margin="0,-7,0,0" />
+                        <Button Classes="action" Content="Update observing site" Command="{Binding ApplyLocationCommand}" HorizontalAlignment="Stretch" />
+
+                        <Border Height="1" Background="#1E2D40" />
+
+                        <StackPanel Spacing="5">
+                            <TextBlock Classes="kicker" Text="DATE &amp; TIME" />
+                            <TextBlock Text="Set the moment to explore, in UTC." FontSize="11" Classes="secondary" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <TextBox Text="{Binding DateTimeText}" PlaceholderText="YYYY-MM-DD HH:mm" AutomationProperties.Name="Date and time in UTC" />
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <Button Classes="quiet" Content="Apply UTC time" Command="{Binding ApplyDateTimeCommand}" />
+                            <Button Grid.Column="1" Classes="quiet" Content="Now" Command="{Binding SetNowCommand}" />
+                        </Grid>
+                        <Button Classes="action" Content="Plan an observing night" Click="OnOpenPlannerClicked" HorizontalAlignment="Stretch" />
+
+                        <Border Height="1" Background="#1E2D40" />
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Classes="kicker" Text="CHART LAYERS" />
+                            <CheckBox Content="Star catalog" IsChecked="{Binding ShowStars}" Foreground="#CFD9E8" />
+                            <CheckBox Content="Featured asterisms" IsChecked="{Binding ShowConstellations}" Foreground="#CFD9E8" />
+                            <CheckBox Content="Sun, Moon &amp; planets" IsChecked="{Binding ShowBodies}" Foreground="#CFD9E8" />
+                            <TextBlock Text="Cassiopeia · Orion · Big Dipper · Summer Triangle" FontSize="10" Classes="secondary" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <TextBlock Text="OFFLINE BY DESIGN · CATALOG AND EPHEMERIDES INCLUDED" FontSize="8" Foreground="#8ECFC4" TextWrapping="Wrap" />
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <Border Grid.Column="1" Margin="14,0" Background="#0D1624" BorderBrush="#1E2D40" BorderThickness="1" CornerRadius="16" ClipToBounds="True">
+                <Grid RowDefinitions="54,*">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="20,0">
+                        <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                            <TextBlock Text="ALL-SKY HORIZON MAP" Classes="kicker" Foreground="#B7C9DD" />
+                            <Border Background="#122332" CornerRadius="6" Padding="7,3">
+                                <TextBlock Text="ALT / AZ" FontSize="8" Foreground="#8EDBCC" />
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="{Binding SceneSummary}" FontSize="10" Foreground="#8599B5" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <Grid Grid.Row="1" ClipToBounds="True">
+                        <views:SkyMapControl Scene="{Binding Scene}"
+                                             SelectedObject="{Binding SelectedObject, Mode=TwoWay}"
+                                             ShowStars="{Binding ShowStars}"
+                                             ShowConstellations="{Binding ShowConstellations}"
+                                             ShowBodies="{Binding ShowBodies}"
+                                             Focusable="True"
+                                             AutomationProperties.Name="All-sky horizon map. Use the arrow keys to move between visible objects."
+                                             Margin="8" />
+                        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="22,0,0,20" Spacing="3" IsHitTestVisible="False">
+                            <TextBlock Text="{Binding SkySummary}" FontSize="11" Foreground="#DAE7F5" />
+                            <TextBlock Text="HORIZON VIEW  ·  TOPOCENTRIC POSITIONS" FontSize="8" Foreground="#8096B1" />
+                        </StackPanel>
+                        <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,16,22,0" Background="#0A111FCC" BorderBrush="#283A50" BorderThickness="1" CornerRadius="9" Padding="9,6" IsHitTestVisible="False">
+                            <TextBlock Text="DRAG TO PAN · WHEEL TO ZOOM · HOME TO RESET · CLICK TO INSPECT" FontSize="8" Foreground="#A9BCD4" />
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" Background="#0E1725" BorderBrush="#1E2D40" BorderThickness="1" CornerRadius="16" Padding="17">
+                <Grid RowDefinitions="Auto,Auto,*,Auto">
+                    <StackPanel Grid.Row="0" Spacing="4" Margin="0,0,0,13">
+                        <TextBlock Classes="kicker" Text="THE SELECTED SKY" />
+                        <TextBlock Text="Targets above your horizon" FontSize="18" FontWeight="SemiBold" Foreground="#EDF3FC" />
+                    </StackPanel>
+
+                    <TextBox Grid.Row="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search stars, planets, designations…" AutomationProperties.Name="Search stars, planets, and designations" Margin="0,0,0,9" />
+
+                    <Grid Grid.Row="2">
+                        <Grid IsVisible="{Binding IsSearching}" RowDefinitions="Auto,*">
+                            <TextBlock Text="SEARCH RESULTS" Classes="kicker" Margin="4,2,0,7" />
+                            <ListBox Grid.Row="1" ItemsSource="{Binding SearchResults}"
+                                     SelectedItem="{Binding SelectedObject, Mode=OneWay}"
+                                     AutomationProperties.Name="Search result objects"
+                                     SelectionChanged="OnObjectSelectionChanged">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="core:SkyChartObject">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="{Binding Name}" FontSize="12" Foreground="#E7EEF9" />
+                                                <TextBlock Text="{Binding Designation}" FontSize="9" Foreground="#8094AE" />
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{Binding Kind}" FontSize="9" Foreground="#73CFC0" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <TextBlock Grid.Row="1" Text="No matching objects. Try a name, HIP, HR, or HD identifier." IsVisible="{Binding !HasSearchResults}" FontSize="10" Classes="secondary" TextWrapping="Wrap" Margin="4,12,4,0" />
+                        </Grid>
+
+                        <Grid IsVisible="{Binding IsNotSearching}" RowDefinitions="Auto,*">
+                            <Grid ColumnDefinitions="*,Auto" Margin="4,1,4,5">
+                                <TextBlock Text="OBJECT" Classes="kicker" />
+                                <TextBlock Grid.Column="1" Text="ALTITUDE" Classes="kicker" />
+                            </Grid>
+                            <ListBox Grid.Row="1" ItemsSource="{Binding VisibleTargets}"
+                                     SelectedItem="{Binding SelectedObject, Mode=OneWay}"
+                                     AutomationProperties.Name="Objects above the horizon with altitude"
+                                     SelectionChanged="OnObjectSelectionChanged">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate x:DataType="core:SkyChartObject">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="{Binding Name}" FontSize="12" Foreground="#E7EEF9" />
+                                                <TextBlock Text="{Binding Kind}" FontSize="9" Foreground="#8094AE" />
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{Binding AltitudeDegrees, StringFormat='{}{0:0}°'}" FontSize="10" Foreground="#A8BBD2" VerticalAlignment="Center" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <TextBlock Grid.Row="1" Text="No bright targets are above the horizon at this moment." IsVisible="{Binding !HasVisibleTargets}" FontSize="10" Classes="secondary" TextWrapping="Wrap" Margin="4,12,4,0" />
+                        </Grid>
+                    </Grid>
+
+                    <Border Grid.Row="3" Background="#111D2C" BorderBrush="#223349" BorderThickness="1" CornerRadius="12" Padding="12" Margin="0,10,0,0">
+                        <StackPanel Spacing="10">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="SELECTED OBJECT" Classes="kicker" />
+                                    <TextBlock Text="{Binding SelectedObject.Name}" FontSize="16" FontWeight="SemiBold" Foreground="#F1F5FB" />
+                                </StackPanel>
+                                <Border Grid.Column="1" Background="#193C42" CornerRadius="6" Padding="7,4" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding SelectedObject.Kind}" FontSize="9" Foreground="#9DE5D8" />
+                                </Border>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="8">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="RIGHT ASCENSION" Classes="kicker" FontSize="8" />
+                                    <TextBlock Text="{Binding SelectedRightAscension}" FontSize="10" Foreground="#C9D7E9" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Spacing="2">
+                                    <TextBlock Text="DECLINATION" Classes="kicker" FontSize="8" />
+                                    <TextBlock Text="{Binding SelectedDeclination}" FontSize="10" Foreground="#C9D7E9" />
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Spacing="2">
+                                    <TextBlock Text="ALT / AZ" Classes="kicker" FontSize="8" />
+                                    <TextBlock Text="{Binding SelectedAltAz}" FontSize="10" Foreground="#C9D7E9" />
+                                </StackPanel>
+                                <StackPanel Grid.Row="1" Grid.Column="1" Spacing="2">
+                                    <TextBlock Text="VISUAL MAGNITUDE" Classes="kicker" FontSize="8" />
+                                    <TextBlock Text="{Binding SelectedMagnitude}" FontSize="10" Foreground="#C9D7E9" />
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="2" Background="#0D1624" BorderBrush="#1E2D40" BorderThickness="1" CornerRadius="15" Margin="18,0,18,14" Padding="16,10">
+            <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto" ColumnSpacing="12">
+                <StackPanel Spacing="3" VerticalAlignment="Center">
+                    <TextBlock Text="TIME SCRUBBER" Classes="kicker" />
+                    <TextBlock Text="Explore ±12 hours around this time" FontSize="10" Classes="secondary" />
+                </StackPanel>
+                <Button Grid.Column="1" Classes="quiet" Content="− 1h" Command="{Binding StepBackCommand}" VerticalAlignment="Center" />
+                <Slider Grid.Column="2" Minimum="-12" Maximum="12" TickFrequency="3" IsSnapToTickEnabled="False" Value="{Binding TimelineOffsetHours}" VerticalAlignment="Center" AutomationProperties.Name="Time offset in hours from minus twelve to plus twelve" />
+                <Button Grid.Column="3" Classes="quiet" Content="+ 1h" Command="{Binding StepForwardCommand}" VerticalAlignment="Center" />
+                <Border Grid.Column="4" Background="#121F2E" BorderBrush="#24374D" BorderThickness="1" CornerRadius="9" Padding="11,8" VerticalAlignment="Center">
+                    <StackPanel Spacing="2" HorizontalAlignment="Right">
+                        <TextBlock Text="{Binding TimeSummary}" FontSize="10" Foreground="#E2EAF5" />
+                        <TextBlock Text="{Binding SceneSummary}" FontSize="8" Foreground="#8D9FB7" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+            </Grid>
+        <Border x:Name="PlannerOverlay" IsVisible="False" Background="#D9080E19" Padding="24"
+                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                AutomationProperties.Name="Observation planner">
+            <Border Background="#080E19" BorderBrush="#2B3D54" BorderThickness="1" CornerRadius="16" Padding="14"
+                    MaxWidth="1000" MaxHeight="760" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ContentControl x:Name="PlannerHost" />
+            </Border>
+        </Border>
+    </Grid>
+</UserControl>

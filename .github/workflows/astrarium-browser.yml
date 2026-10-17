@@ -1,0 +1,57 @@
+name: Astrarium WebAssembly build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-wasm:
+    name: Browser WebAssembly
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install WebAssembly toolchain
+        run: dotnet workload install wasm-tools
+
+      - name: Publish browser app with native rendering assets
+        run: >-
+          dotnet publish src/Astrarium.Avalonia.Browser/Astrarium.Avalonia.Browser.csproj
+          --configuration Release
+          -p:WasmBuildNative=true
+
+      - name: Verify static site output
+        shell: bash
+        run: |
+          site="src/Astrarium.Avalonia.Browser/bin/Release/net10.0-browser/publish/wwwroot"
+          test -s "$site/index.html"
+          find "$site" -maxdepth 1 -type f -name 'main*.js' -size +0c | grep -q .
+          test -s "$site/js/storage.js"
+          test -s "$site/_framework/dotnet.js"
+          find "$site/_framework" -type f -name '*.wasm' -size +0c | grep -q .
+
+      - name: Package browser site
+        shell: bash
+        run: |
+          site="src/Astrarium.Avalonia.Browser/bin/Release/net10.0-browser/publish/wwwroot"
+          mkdir -p artifacts
+          tar -czf artifacts/astrarium-browser-wasm.tar.gz -C "$site" .
+          sha256sum artifacts/astrarium-browser-wasm.tar.gz > artifacts/SHA256SUMS.txt
+
+      - name: Upload browser site artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: astrarium-browser-wasm
+          path: artifacts/*
+          if-no-files-found: error
+          retention-days: 30

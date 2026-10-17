@@ -25,5 +25,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Astrarium.Port.Core\Astrarium.Port.Core.csproj" />
+    <ProjectReference Include="..\Astrarium.Avalonia.Shared\Astrarium.Avalonia.Shared.csproj" />
   </ItemGroup>
 </Project>

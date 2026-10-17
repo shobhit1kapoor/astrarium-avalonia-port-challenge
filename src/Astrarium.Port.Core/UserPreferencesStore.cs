@@ -3,13 +3,19 @@ using System.Text.Json;
 
 namespace Astrarium.Port.Core;
 
+/// <summary>Loads and stores the observer settings used by the application.</summary>
+public interface IUserPreferencesStore
+{
+    UserPreferences? Load();
+    void Save(UserPreferences preferences);
+}
+
 /// <summary>
 /// Reads and atomically writes small per-user settings in the platform's local application data folder.
 /// </summary>
-public sealed class UserPreferencesStore
+public sealed class UserPreferencesStore : IUserPreferencesStore
 {
     private const long MaximumFileSizeBytes = 64 * 1024;
-    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
     private readonly string _path;
 
     public UserPreferencesStore(string? path = null)
@@ -38,7 +44,7 @@ public sealed class UserPreferencesStore
             if (stream.Length > MaximumFileSizeBytes)
                 return null;
 
-            var preferences = JsonSerializer.Deserialize<UserPreferences>(stream, JsonOptions);
+            var preferences = JsonSerializer.Deserialize(stream, AstrariumJsonContext.Default.UserPreferences);
             if (preferences is null)
                 return null;
 
@@ -68,7 +74,9 @@ public sealed class UserPreferencesStore
         {
             using (var stream = new FileStream(temporaryPath, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
-                JsonSerializer.Serialize(stream, preferences with { InstantUtc = preferences.InstantUtc.ToUniversalTime() }, JsonOptions);
+                JsonSerializer.Serialize(stream,
+                    preferences with { InstantUtc = preferences.InstantUtc.ToUniversalTime() },
+                    AstrariumJsonContext.Default.UserPreferences);
                 if (stream.Length > MaximumFileSizeBytes)
                     throw new InvalidDataException("The preferences exceed the supported file size.");
 

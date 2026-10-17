@@ -1,25 +1,27 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Astrarium.Avalonia.ViewModels;
 using Astrarium.Port.Core;
+using Astrarium.Avalonia.ViewModels;
 
 namespace Astrarium.Avalonia.Views;
 
 public partial class MainWindow : Window
 {
-    private readonly SkySceneCalculator _calculator;
+    private readonly MainView _mainView;
 
     public MainWindow()
         : this(null)
     {
     }
 
-    public MainWindow(UserPreferencesStore? preferencesStore)
+    public MainWindow(IUserPreferencesStore? preferencesStore)
     {
         InitializeComponent();
-        _calculator = new SkySceneCalculator(StarCatalog.LoadBundled());
-        DataContext = new MainViewModel(_calculator, preferencesStore);
-        Closing += (_, _) => (DataContext as MainViewModel)?.FlushPreferences();
+        _mainView = new MainView(preferencesStore, PlannerPresentation.Window);
+        _mainView.PlannerRequested += OnPlannerRequested;
+        MainContent.Content = _mainView;
+        DataContext = _mainView.DataContext;
+        Closing += (_, _) => _mainView.FlushPreferences();
         Opened += (_, _) =>
         {
             var smokeMarkerPath = Environment.GetEnvironmentVariable("ASTRARIUM_WINDOW_SMOKE_FILE");
@@ -28,30 +30,15 @@ public partial class MainWindow : Window
         };
     }
 
-    private async void OnOpenPlannerClicked(object? sender, RoutedEventArgs e)
+    private async void OnPlannerRequested(object? sender, PlannerRequestedEventArgs request)
     {
-        if (DataContext is not MainViewModel viewModel)
-            return;
-
-        var plannerWindow = new NightPlannerWindow(
-            new ObservationPlanner(_calculator),
-            viewModel.CurrentLocation,
-            viewModel.CurrentInstant);
+        var plannerWindow = new NightPlannerWindow(request.Planner, request.Location, request.InstantUtc);
         plannerWindow.ShowTargetRequested += async target =>
         {
             plannerWindow.Close();
-            await viewModel.GoToPlannedObservationAsync(target);
+            await _mainView.ViewModel.GoToPlannedObservationAsync(target);
         };
 
         await plannerWindow.ShowDialog(this);
-    }
-
-    private void OnObjectSelectionChanged(object? sender, SelectionChangedEventArgs e)
-    {
-        if (DataContext is not MainViewModel viewModel)
-            return;
-
-        if (e.AddedItems.OfType<SkyChartObject>().LastOrDefault() is { } selectedObject)
-            viewModel.SelectedObject = selectedObject;
     }
 }

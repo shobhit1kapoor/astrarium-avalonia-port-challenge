@@ -1,13 +1,11 @@
 using Avalonia.Controls;
-using Avalonia.Interactivity;
-using Astrarium.Avalonia.ViewModels;
 using Astrarium.Port.Core;
 
 namespace Astrarium.Avalonia.Views;
 
 public partial class NightPlannerWindow : Window
 {
-    private readonly NightPlannerViewModel _viewModel;
+    private readonly NightPlannerView _plannerView;
 
     public NightPlannerWindow()
         : this(new ObservationPlanner(new SkySceneCalculator(StarCatalog.LoadBundled())),
@@ -18,19 +16,19 @@ public partial class NightPlannerWindow : Window
     public NightPlannerWindow(ObservationPlanner planner, ObservingLocation location, DateTimeOffset referenceInstant)
     {
         InitializeComponent();
-        _viewModel = new NightPlannerViewModel(planner, location, referenceInstant);
-        DataContext = _viewModel;
-        Opened += (_, _) => _viewModel.BuildPlanCommand.Execute(null);
-        Closing += (_, _) => _viewModel.Cancel();
+        _plannerView = new NightPlannerView(planner, location, referenceInstant);
+        _plannerView.ShowTargetRequested += ForwardShowTargetRequestedAsync;
+        _plannerView.CloseRequested += Close;
+        PlannerContent.Content = _plannerView;
+        DataContext = _plannerView.DataContext;
+        Closing += (_, _) => _plannerView.Cancel();
     }
 
     public event Func<PlannedObservation, Task>? ShowTargetRequested;
 
-    private async void OnShowTargetClicked(object? sender, RoutedEventArgs e)
+    private async Task ForwardShowTargetRequestedAsync(PlannedObservation observation)
     {
-        if ((sender as Button)?.DataContext is PlannedObservationItem item && ShowTargetRequested is { } handler)
-            await handler(item.Observation);
+        if (ShowTargetRequested is { } handler)
+            await handler(observation);
     }
-
-    private void OnCloseClicked(object? sender, RoutedEventArgs e) => Close();
 }
