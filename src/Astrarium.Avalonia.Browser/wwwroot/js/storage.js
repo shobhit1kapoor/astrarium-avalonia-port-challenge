@@ -14,3 +14,7 @@ export function write(key, value) {
         return false;
     }
 }
+
+export function hideSplash() {
+    document.querySelector('.avalonia-splash')?.remove();
+}
