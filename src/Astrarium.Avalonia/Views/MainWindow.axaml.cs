@@ -10,6 +10,13 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContext = new MainViewModel(new SkySceneCalculator(StarCatalog.LoadBundled()));
+        Closing += (_, _) => (DataContext as MainViewModel)?.FlushPreferences();
+        Opened += (_, _) =>
+        {
+            var smokeMarkerPath = Environment.GetEnvironmentVariable("ASTRARIUM_WINDOW_SMOKE_FILE");
+            if (!string.IsNullOrWhiteSpace(smokeMarkerPath))
+                File.WriteAllText(smokeMarkerPath, "opened");
+        };
     }
 
     private void OnObjectSelectionChanged(object? sender, SelectionChangedEventArgs e)

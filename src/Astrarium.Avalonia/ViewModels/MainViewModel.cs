@@ -9,15 +9,21 @@ namespace Astrarium.Avalonia.ViewModels;
 public partial class MainViewModel : ViewModelBase
 {
     private readonly SkySceneCalculator _calculator;
+    private readonly UserPreferencesStore _preferencesStore;
     private readonly SemaphoreSlim _calculationGate = new(1, 1);
     private CancellationTokenSource? _pendingCalculation;
+    private CancellationTokenSource? _pendingPreferencesSave;
     private DateTimeOffset _referenceInstant;
     private ObservingLocation _location = ObservingLocation.Greenwich;
+    private bool _isRestoringPreferences = true;
 
-    public MainViewModel(SkySceneCalculator calculator)
+    public MainViewModel(SkySceneCalculator calculator, UserPreferencesStore? preferencesStore = null)
     {
         _calculator = calculator;
-        _referenceInstant = new DateTimeOffset(DateTime.UtcNow.Date.AddHours(21), TimeSpan.Zero);
+        _preferencesStore = preferencesStore ?? new UserPreferencesStore();
+        var preferences = _preferencesStore.Load();
+        _location = preferences?.Location ?? ObservingLocation.Greenwich;
+        _referenceInstant = preferences?.InstantUtc ?? new DateTimeOffset(DateTime.UtcNow.Date.AddHours(21), TimeSpan.Zero);
         DateTimeText = FormatDateTime(_referenceInstant);
         LocationName = _location.Name;
         LatitudeText = _location.LatitudeDegrees.ToString("F4", CultureInfo.InvariantCulture);
@@ -31,7 +37,12 @@ public partial class MainViewModel : ViewModelBase
             new("Reykjavík, Iceland", new ObservingLocation("Reykjavík", 64.1466, -21.9426, 61))
         };
 
-        _ = RecalculateAsync();
+        ShowStars = preferences?.ShowStars ?? true;
+        ShowConstellations = preferences?.ShowConstellations ?? true;
+        ShowBodies = preferences?.ShowBodies ?? true;
+        _isRestoringPreferences = false;
+
+        _ = RecalculateAsync(_referenceInstant);
     }
 
     [ObservableProperty]
@@ -165,6 +176,7 @@ public partial class MainViewModel : ViewModelBase
         var next = _referenceInstant.AddHours(value);
         DateTimeText = FormatDateTime(next);
         _ = RecalculateAsync(next);
+        SchedulePreferenceSave();
     }
 
     partial void OnSelectedLocationPresetChanged(LocationPreset? value)
@@ -177,7 +189,14 @@ public partial class MainViewModel : ViewModelBase
         LatitudeText = _location.LatitudeDegrees.ToString("F4", CultureInfo.InvariantCulture);
         LongitudeText = _location.LongitudeEastDegrees.ToString("F4", CultureInfo.InvariantCulture);
         _ = RecalculateAsync();
+        SchedulePreferenceSave();
     }
+
+    partial void OnShowStarsChanged(bool value) => SchedulePreferenceSave();
+
+    partial void OnShowConstellationsChanged(bool value) => SchedulePreferenceSave();
+
+    partial void OnShowBodiesChanged(bool value) => SchedulePreferenceSave();
 
     public string SelectedRightAscension => SelectedObject is null ? "—" : FormatRightAscension(SelectedObject.RightAscensionDegrees);
     public string SelectedDeclination => SelectedObject is null ? "—" : FormatSignedDegrees(SelectedObject.DeclinationDegrees);
@@ -209,6 +228,7 @@ public partial class MainViewModel : ViewModelBase
 
         _location = candidate;
         SelectedLocationPreset = null;
+        SchedulePreferenceSave();
         await RecalculateAsync();
     }
 
@@ -225,6 +245,7 @@ public partial class MainViewModel : ViewModelBase
         _referenceInstant = selected;
         TimelineOffsetHours = 0;
         DateTimeText = FormatDateTime(selected);
+        SchedulePreferenceSave();
         await RecalculateAsync(selected);
     }
 
@@ -234,6 +255,7 @@ public partial class MainViewModel : ViewModelBase
         _referenceInstant = DateTimeOffset.UtcNow;
         TimelineOffsetHours = 0;
         DateTimeText = FormatDateTime(_referenceInstant);
+        SchedulePreferenceSave();
         await RecalculateAsync(_referenceInstant);
     }
 
@@ -249,8 +271,69 @@ public partial class MainViewModel : ViewModelBase
         _referenceInstant = next;
         TimelineOffsetHours = 0;
         DateTimeText = FormatDateTime(next);
+        SchedulePreferenceSave();
         await RecalculateAsync(next);
     }
+
+    public void FlushPreferences()
+    {
+        var pending = _pendingPreferencesSave;
+        _pendingPreferencesSave = null;
+        pending?.Cancel();
+
+        try
+        {
+            _preferencesStore.Save(CreatePreferencesSnapshot());
+        }
+        catch (Exception error)
+        {
+            StatusMessage = $"Could not save preferences: {error.Message}";
+        }
+    }
+
+    private void SchedulePreferenceSave()
+    {
+        if (_isRestoringPreferences)
+            return;
+
+        _pendingPreferencesSave?.Cancel();
+        var cancellation = new CancellationTokenSource();
+        _pendingPreferencesSave = cancellation;
+        _ = SavePreferencesAfterDelayAsync(CreatePreferencesSnapshot(), cancellation);
+    }
+
+    private async Task SavePreferencesAfterDelayAsync(UserPreferences preferences, CancellationTokenSource cancellation)
+    {
+        try
+        {
+            await Task.Delay(300, cancellation.Token);
+            cancellation.Token.ThrowIfCancellationRequested();
+            _preferencesStore.Save(preferences);
+        }
+        catch (OperationCanceledException)
+        {
+            // A newer setting change or application close superseded this save.
+        }
+        catch (Exception error)
+        {
+            if (!cancellation.IsCancellationRequested)
+                StatusMessage = $"Could not save preferences: {error.Message}";
+        }
+        finally
+        {
+            if (ReferenceEquals(_pendingPreferencesSave, cancellation))
+                _pendingPreferencesSave = null;
+            cancellation.Dispose();
+        }
+    }
+
+    private UserPreferences CreatePreferencesSnapshot() => new(
+        UserPreferences.CurrentSchemaVersion,
+        _location,
+        _referenceInstant.AddHours(TimelineOffsetHours).ToUniversalTime(),
+        ShowStars,
+        ShowConstellations,
+        ShowBodies);
 
     private async Task RecalculateAsync(DateTimeOffset? instant = null)
     {

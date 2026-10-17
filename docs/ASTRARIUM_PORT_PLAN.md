@@ -20,18 +20,18 @@ The challenge announcement says the same codebase on Windows, macOS, and Linux i
 
 ## Baseline at the end of October 17
 
-**Implemented:** separate portable algorithm, core, and Avalonia UI projects; bundled licensed HYG magnitude-6 subset; actual topocentric positions for 5,070 stars, Sun, Moon, and seven planets; a polar horizon chart with featured asterisms, collision-aware labels, compass rotation, drag pan, wheel zoom, and Home reset; location presets and coordinate entry; UTC date/time and 24-hour scrubber; search with an explicit empty state; object selection and position details; keyboard arrow navigation; and separate star/asterism/body chart layers. The target list has its own scroll area, and chart selections outside that filtered list retain their details. The 92 upstream algorithm checks and five core checks pass. Windows Release builds with no warnings and the latest application has been visually checked on Windows. The first hosted CI run passed tests and packaging on Windows x64, Linux x64, macOS Intel, and macOS Apple silicon.
+**Implemented:** separate portable algorithm, core, and Avalonia UI projects; bundled licensed HYG magnitude-6 subset; actual topocentric positions for 5,070 stars, Sun, Moon, and seven planets; a polar horizon chart with featured asterisms, collision-aware labels, compass rotation, drag pan, wheel zoom, and Home reset; location presets and coordinate entry; UTC date/time and 24-hour scrubber; search with an explicit empty state; object selection and position details; keyboard arrow navigation; separate star/asterism/body chart layers; and atomic, versioned local persistence for observer site, UTC time, and layer visibility. A manual close/relaunch check restored a custom Mauna Kea site, a changed UTC time, and a hidden-body layer. The 92 upstream algorithm checks and seven port-core checks pass locally. Windows Release builds with no warnings and has been visually exercised on Windows.
 
-**Still unproven or incomplete:** persistence, a full observing-night planner, physical Linux/macOS device checks, public GitHub release assets, final CI launch smoke results for the newest code, and final measured migration effort. Hosted CI and local self-contained publish succeeded for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64`; only Windows has had a local desktop launch and visual check. The latest source adds runner-based GUI launch smoke checks, which must pass before claiming the packaged app starts on all targets. The current check count does not establish astronomical accuracy for every object/date; the inherited low-accuracy Carrington fit has an explicit 2021 residual check.
+**Still unproven or incomplete:** a full observing-night planner, physical Linux/macOS device checks, hosted CI for the new persistence code and actual `Window.Opened` marker, and a responsive review at the minimum supported window size. The public preview release and hosted run #39032101742 are from the preceding code revision; the run passed tests, packaging, and process-live startup checks for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64`. Only Windows has had a local desktop launch and visual check. The current check count does not establish astronomical accuracy for every object/date; the inherited low-accuracy Carrington fit has an explicit 2021 residual check.
 
-**Next order:** (1) push the current pan/zoom and selection changes and pass the four-target build, test, package, and GUI-launch matrix; (2) inspect release archives and add platform run instructions; (3) review the workflow at the 1080×720 minimum size and record Windows versus runner-only checks; (4) finish the README migration account with observed elapsed effort and screenshots; (5) publish judge-downloadable release assets and submit early on October 23. The matrix includes macOS Intel and Apple silicon so architecture gaps are visible.
+**Next order:** (1) publish the persistence implementation and pass the four-target test, package, and GUI-launch matrix; (2) replace the preview archives with verified builds from that revision; (3) review the UI at its minimum supported size and test common scaling; (4) finish the migration report and submit early on October 23. The matrix includes macOS Intel and Apple silicon so architecture gaps are visible.
 
 ## Acceptance criteria for the first release
 
 ### Product
 
 - [ ] The app starts directly into a useful observing session; no account, network connection, or manual setup is needed to see the sample sky.
-- [ ] Observer coordinates/location and date/time can be changed, validated, saved, and used to recompute the chart.
+- [x] Observer coordinates/location and date/time can be changed, validated, saved across restarts, and used to recompute the chart.
 - [ ] The chart is driven by real Astrarium calculations and a clearly licensed catalog, not hard-coded screenshot coordinates.
 - [x] The user can pan/zoom, toggle core chart layers, search/select objects, and see object identity plus coordinates/altitude or visibility data.
 - [x] The above-horizon list shows a filtered set of bright targets for the selected instant; it is labeled as a current-sky view, not a nightly observing planner.
@@ -99,7 +99,8 @@ The schedule is aggressive. If a release blocker appears, cut optional features 
 
 - [ ] Validate date/time timezone and location coordinate conventions; test representative northern and southern latitudes and dates.
 - [ ] Verify chart projection near the horizon/zenith and across angle wraparound.
-- [ ] Verify search, selection, persistence, keyboard paths, chart resize, and recovery from malformed location input.
+- [x] Verify search, selection, persistence, keyboard paths, and recovery from malformed location input.
+- [ ] Verify chart resize and the minimum window size at common display scaling levels.
 - [ ] Build Windows, macOS, and Linux; launch the artifacts; record OS versions and environment.
 - [ ] Scan dependencies/assets and check all notices and license conditions.
 

@@ -6,21 +6,21 @@ Deliver a credible, polished Avalonia port or rewrite of an application that exi
 
 ## Rules and submission requirements
 
-- [ ] Confirm the original application existed before the contest opened; preserve dated evidence such as releases, repository history, or screenshots.
-- [ ] Confirm we own the source application or that its license permits this port and the planned distribution model.
-- [ ] Decide the entry track: open source or closed source.
-- [ ] Limit the team to three people; only one prize is awarded per team.
-- [ ] Produce a runnable build for every platform we claim to support. Closed-source builds must be usable by judges; arrange a trial, temporary key, or demo account if needed.
+- [x] Confirm the original application existed before the contest opened; preserve the pinned upstream source revision and its dated repository history.
+- [x] Confirm the upstream MIT source license permits this open-source port; separately record the HYG catalog's CC BY-SA 4.0 obligations.
+- [x] Choose the open-source entry track.
+- [x] Keep the entry to one human contributor, within the three-person limit.
+- [x] Produce self-contained builds for Windows x64, Linux x64, macOS Intel, and macOS Apple silicon in [preview release v0.1.0-preview.1](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.1). Windows was also launched and visually reviewed locally.
 - [x] Capture before-and-after screenshots; the source screenshot is linked at the pinned upstream revision rather than redistributed, and the Avalonia image is captured from the running port.
-- [ ] Write a migration report covering actual effort and cost, what carried over, what needed redesign, surprises, compromises, and platform-specific differences.
+- [x] Write a migration report covering elapsed release window and cost, what carried over, redesign, surprises, compromises, and runner-only platform checks; actively tracked person-hours were not recorded and are not claimed.
 - [ ] Submit through the official entry form before **2026-10-23 23:59 UTC** ( **2026-10-23 18:59 America/Chicago** ).
 
 The official announcement also asks for an honest migration account, says AI-assisted code is allowed, and permits solo entries or teams of up to three. It evaluates migration difficulty/completeness, resulting-app quality, cross-platform implementation, engineering quality, and usefulness of the write-up. Mobile/WebAssembly is additional recognition, after desktop quality. These details and the deadline were rechecked against the [official challenge announcement](https://avaloniaui.net/blog/avalonia-port-challenge) on October 17, 2026.
 
 Open-source track:
 
-- [ ] Publish the source in a public GitHub repository under an OSI-approved license.
-- [ ] Put platform build links, screenshots, and the migration write-up in the repository, with the write-up in the README as specified by the announcement.
+- [x] Publish the source in a public GitHub repository under the MIT license.
+- [x] Put platform build links, before/after screenshots, and the migration write-up in the repository README.
 
 Closed-source track:
 
@@ -45,8 +45,9 @@ Astrarium is the selected **open-source** submission, targeting **Best Legacy Re
 
 - [x] Confirm the original Windows planetarium predates the challenge and its code license allows an open-source port.
 - [x] Establish a portable .NET/Avalonia solution, run the observing flow on Windows, and pass an initial hosted build/test/package matrix on Windows, macOS, and Linux.
-- [ ] Pass the updated CI matrix with native-window startup smoke on Windows, macOS, and Linux; record runner-only versus physical checks.
+- [x] Pass hosted tests, packaging, and process-live startup checks on Windows, Linux, macOS Intel, and macOS Apple silicon ([run #39032101742](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39032101742)); record runner-only versus physical checks.
+- [ ] Pass the current-code matrix with its explicit `Window.Opened` marker, then update the preview archives. The earlier run verifies process startup, not a visible window.
 - [ ] Review the focused observing flow at the minimum window size and common scaling levels; keyboard arrow navigation, search, map selection, panning, zoom, and reset have been checked on Windows.
-- [ ] Publish the source repository under an OSI-approved license and judge-downloadable builds for each target OS.
-- [ ] Finish the honest README migration report with observed elapsed engineering time, migration cost, and remaining limits.
+- [x] Publish judge-downloadable release builds for each target OS. The public MIT source repository is available at [shobhit1kapoor/astrarium-avalonia-port-challenge](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge).
+- [x] Finish the honest README migration report with observed elapsed engineering time, migration cost, and remaining limits.
 - [ ] Submit through the official form before the deadline and save the confirmation.

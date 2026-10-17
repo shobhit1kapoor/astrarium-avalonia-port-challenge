@@ -1,0 +1,73 @@
+using System.Text.Json;
+
+namespace Astrarium.Port.Core;
+
+/// <summary>
+/// Reads and atomically writes small per-user settings in the platform's local application data folder.
+/// </summary>
+public sealed class UserPreferencesStore
+{
+    private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    private readonly string _path;
+
+    public UserPreferencesStore(string? path = null)
+    {
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            _path = Path.GetFullPath(path);
+            return;
+        }
+
+        var localData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+        if (string.IsNullOrWhiteSpace(localData))
+            throw new InvalidOperationException("The local application data folder is unavailable.");
+
+        _path = Path.Combine(localData, "Astrarium", "preferences.json");
+    }
+
+    public UserPreferences? Load()
+    {
+        if (!File.Exists(_path))
+            return null;
+
+        try
+        {
+            using var stream = File.OpenRead(_path);
+            var preferences = JsonSerializer.Deserialize<UserPreferences>(stream, JsonOptions);
+            if (preferences is null)
+                return null;
+
+            preferences.Validate();
+            return preferences with { InstantUtc = preferences.InstantUtc.ToUniversalTime() };
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or JsonException or
+                                     ArgumentException or NotSupportedException)
+        {
+            return null;
+        }
+    }
+
+    public void Save(UserPreferences preferences)
+    {
+        ArgumentNullException.ThrowIfNull(preferences);
+        preferences.Validate();
+
+        var directory = Path.GetDirectoryName(_path)
+            ?? throw new InvalidOperationException("The preferences path has no parent folder.");
+        Directory.CreateDirectory(directory);
+
+        var temporaryPath = $"{_path}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            using (var stream = File.Create(temporaryPath))
+                JsonSerializer.Serialize(stream, preferences with { InstantUtc = preferences.InstantUtc.ToUniversalTime() }, JsonOptions);
+
+            File.Move(temporaryPath, _path, overwrite: true);
+        }
+        finally
+        {
+            if (File.Exists(temporaryPath))
+                File.Delete(temporaryPath);
+        }
+    }
+}

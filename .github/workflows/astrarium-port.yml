@@ -55,44 +55,53 @@ jobs:
           -p:PublishTrimmed=false
           -p:PublishSingleFile=false
 
-      - name: Launch desktop window smoke (Windows)
+      - name: Verify opened Avalonia window (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
+          $marker = Join-Path $pwd "astrarium-window-opened.txt"
+          $env:ASTRARIUM_WINDOW_SMOKE_FILE = $marker
           $process = Start-Process -FilePath "$pwd/publish/Astrarium.Avalonia.exe" -PassThru
-          Start-Sleep -Seconds 8
-          $process.Refresh()
-          if ($process.HasExited) { throw "Astrarium exited before its window stayed open." }
+          for ($attempt = 0; $attempt -lt 20 -and -not (Test-Path $marker); $attempt++) {
+            Start-Sleep -Milliseconds 500
+            $process.Refresh()
+            if ($process.HasExited) { throw "Astrarium exited before its window opened." }
+          }
+          if (-not (Test-Path $marker)) { throw "Astrarium did not report its Avalonia window opening." }
           Stop-Process -Id $process.Id -Force
 
-      - name: Launch desktop window smoke (macOS)
+      - name: Verify opened Avalonia window (macOS)
         if: runner.os == 'macOS'
         shell: bash
         run: |
+          export ASTRARIUM_WINDOW_SMOKE_FILE="$PWD/astrarium-window-opened.txt"
           ./publish/Astrarium.Avalonia &
           app_pid=$!
-          sleep 8
-          if ! kill -0 "$app_pid" 2>/dev/null; then
-            wait "$app_pid"
-            exit 1
-          fi
+          for attempt in $(seq 1 20); do
+            if [ -f "$ASTRARIUM_WINDOW_SMOKE_FILE" ]; then break; fi
+            if ! kill -0 "$app_pid" 2>/dev/null; then wait "$app_pid"; exit 1; fi
+            sleep 0.5
+          done
+          if [ ! -f "$ASTRARIUM_WINDOW_SMOKE_FILE" ]; then echo "Avalonia window did not open."; kill "$app_pid" 2>/dev/null || true; exit 1; fi
           kill "$app_pid"
           wait "$app_pid" || true
 
-      - name: Launch desktop window smoke (Linux)
+      - name: Verify opened Avalonia window (Linux)
         if: runner.os == 'Linux'
         shell: bash
         run: |
           sudo apt-get update
           sudo apt-get install --yes xvfb
+          export ASTRARIUM_WINDOW_SMOKE_FILE="$PWD/astrarium-window-opened.txt"
           xvfb-run --auto-servernum bash -c '
             ./publish/Astrarium.Avalonia &
             app_pid=$!
-            sleep 8
-            if ! kill -0 "$app_pid" 2>/dev/null; then
-              wait "$app_pid"
-              exit 1
-            fi
+            for attempt in $(seq 1 20); do
+              if [ -f "$ASTRARIUM_WINDOW_SMOKE_FILE" ]; then break; fi
+              if ! kill -0 "$app_pid" 2>/dev/null; then wait "$app_pid"; exit 1; fi
+              sleep 0.5
+            done
+            if [ ! -f "$ASTRARIUM_WINDOW_SMOKE_FILE" ]; then echo "Avalonia window did not open."; kill "$app_pid" 2>/dev/null || true; exit 1; fi
             kill "$app_pid"
             wait "$app_pid" || true
           '
