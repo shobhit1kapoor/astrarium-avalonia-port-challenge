@@ -34,7 +34,7 @@ The upstream repository is MIT-licensed. Keep the upstream license and attributi
 2. Change the location and time; recompute the sky from actual astronomy calculations.
 3. Explore the chart with pan/zoom and toggle core layers such as stars, constellation lines, horizon, and solar-system bodies.
 4. Search for or select an object and inspect useful identity/position/visibility details.
-5. Review a concise “visible tonight” list for the chosen observer and time range.
+5. Plan an observing night: identify astronomical darkness and target windows that meet altitude, solar-altitude, magnitude, and minimum-duration filters, then jump to a recommended target's best sampled time.
 
 This boundary prioritizes a coherent, accurate end-to-end app over a superficial port of every upstream screen. Deferred plugins and integrations must be named honestly in the README and migration report.
 
@@ -48,7 +48,7 @@ This boundary prioritizes a coherent, accurate end-to-end app over a superficial
 
 ## Port verification and known algorithm limits
 
-The port runs 92 retained upstream algorithm tests and five focused core tests. The inherited refraction test was corrected to call the current `Flattening(h, P, T)` API without passing the solar diameter as atmospheric pressure. The legacy Carrington Fourier fit is retained unchanged, but its old reference test assumed agreement with the modern 2021 boundary to 0.02°; against the 2021 boundary now listed by the University of Maryland page, the inherited fit differs by about 0.0447°. The test records that actual legacy result and the README does not present the fit as modern precision. The star catalog generator was rerun against its pinned source file; the generated JSON is byte-for-byte identical to the bundled catalog.
+The port runs 92 retained upstream algorithm tests, 15 focused core tests, and four Avalonia UI tests (111 total). Preview 8 source commit `c4ad856` passed all 111 tests and window-open checks on four hosted desktop runners, with separate WebAssembly build and Pages deployment checks; the exact builds and hashes are in [Preview 8](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.8). The browser chart → planner → chart flow was exercised on the deployed build. The inherited refraction test was corrected to call the current `Flattening(h, P, T)` API without passing the solar diameter as atmospheric pressure. The legacy Carrington Fourier fit is retained unchanged, but its old reference test assumed agreement with the modern 2021 boundary to 0.02°; against the 2021 boundary now listed by the University of Maryland page, the inherited fit differs by about 0.0447°. The test records that actual legacy result and the README does not present the fit as modern precision. The star catalog generator was rerun against its pinned source file; the generated JSON is byte-for-byte identical to the bundled catalog.
 
 ## Risks and feasibility
 
@@ -71,6 +71,6 @@ Six days is not enough to reproduce Astrarium's complete plugin ecosystem and ve
 
 **Reason:** It combines a real .NET Framework 4.5.1/WPF/WinForms migration with an unusually visual and useful end product. Its calculation library appears separable from the Windows UI, allowing a defensible engineering story and an accurate core experience.
 
-**Boundary:** The entry will not claim full plugin parity. The first target is a complete location/time/sky-map/object-inspection workflow on Windows, macOS, and Linux. Mobile or WebAssembly is stretch scope only after desktop release readiness.
+**Boundary:** The entry does not claim full plugin parity. The released desktop builds implement the core location/time/sky-map/object-inspection and observing-planner workflows on Windows, macOS, and Linux. A shared WebAssembly host is also released as an extra target; it is a static site with no backend.
 
-**Open questions:** Catalog redistribution rights, exact algorithm retarget work, screenshot/source snapshot, the final scope of the visible-tonight planner, and whether all three OS builds can be launched on real machines.
+**Status after Preview 8:** Catalog redistribution and source provenance are documented in [data notices](DATA_NOTICES.md); the upstream algorithms are retargeted and validated; the planner scope and its 10-minute sampling/interpolated boundary limits are documented; before-and-after screenshots and downloadable builds are published. Remaining unverified areas are full upstream plugin/catalog parity, native Windows monitor-scale changes, and physical Linux/macOS hardware validation. Those limitations are stated in the README and delivery plan; hosted runner checks are not represented as physical-device testing.
