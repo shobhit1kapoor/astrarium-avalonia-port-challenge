@@ -163,5 +163,10 @@ public sealed class DisplayScalingTests
             .Where(list => string.IsNullOrWhiteSpace(AutomationProperties.GetName(list)))
             .ToArray();
         Assert.IsEmpty(unnamedLists, "Each list must expose an accessible name.");
+
+        var unnamedCharts = window.GetVisualDescendants().OfType<SkyMapControl>()
+            .Where(chart => string.IsNullOrWhiteSpace(AutomationProperties.GetName(chart)))
+            .ToArray();
+        Assert.IsEmpty(unnamedCharts, "The sky chart must expose an accessible name.");
     }
 }
