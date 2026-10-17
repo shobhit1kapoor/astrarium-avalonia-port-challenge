@@ -55,3 +55,28 @@ jobs:
           path: artifacts/*
           if-no-files-found: error
           retention-days: 30
+
+      - name: Upload GitHub Pages site
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: src/Astrarium.Avalonia.Browser/bin/Release/net10.0-browser/publish/wwwroot
+
+  deploy-demo:
+    name: Deploy browser demo
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: browser-wasm
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: github-pages
+      cancel-in-progress: true
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy static browser app
+        id: deployment
+        uses: actions/deploy-pages@v5
