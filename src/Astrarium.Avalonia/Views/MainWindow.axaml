@@ -102,7 +102,7 @@
 
                         <StackPanel Spacing="5">
                             <TextBlock Text="QUICK LOCATIONS" Classes="kicker" />
-                            <ComboBox ItemsSource="{Binding LocationPresets}" SelectedItem="{Binding SelectedLocationPreset}" PlaceholderText="Choose a site" Background="#0B1422" BorderBrush="#27384F" Foreground="#E7EEF9" CornerRadius="9" Padding="9,7">
+                            <ComboBox ItemsSource="{Binding LocationPresets}" SelectedItem="{Binding SelectedLocationPreset}" PlaceholderText="Choose a site" AutomationProperties.Name="Quick observing site" Background="#0B1422" BorderBrush="#27384F" Foreground="#E7EEF9" CornerRadius="9" Padding="9,7">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate x:DataType="vm:LocationPreset">
                                         <TextBlock Text="{Binding Label}" />
@@ -113,17 +113,17 @@
 
                         <StackPanel Spacing="5">
                             <TextBlock Text="SITE NAME" Classes="kicker" />
-                            <TextBox Text="{Binding LocationName}" PlaceholderText="Observing site" />
+                            <TextBox Text="{Binding LocationName}" PlaceholderText="Observing site" AutomationProperties.Name="Observing site name" />
                         </StackPanel>
 
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="9">
                             <StackPanel Spacing="5">
                                 <TextBlock Text="LATITUDE" Classes="kicker" />
-                                <TextBox Text="{Binding LatitudeText}" PlaceholderText="51.4779" />
+                                <TextBox Text="{Binding LatitudeText}" PlaceholderText="51.4779" AutomationProperties.Name="Latitude in decimal degrees" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="5">
                                 <TextBlock Text="LONGITUDE" Classes="kicker" />
-                                <TextBox Text="{Binding LongitudeText}" PlaceholderText="0.0000" />
+                                <TextBox Text="{Binding LongitudeText}" PlaceholderText="0.0000" AutomationProperties.Name="Longitude east in decimal degrees" />
                             </StackPanel>
                         </Grid>
                         <TextBlock Text="Decimal degrees · east is positive" FontSize="10" Classes="secondary" Margin="0,-7,0,0" />
@@ -135,7 +135,7 @@
                             <TextBlock Classes="kicker" Text="DATE &amp; TIME" />
                             <TextBlock Text="Set the moment to explore, in UTC." FontSize="11" Classes="secondary" TextWrapping="Wrap" />
                         </StackPanel>
-                        <TextBox Text="{Binding DateTimeText}" PlaceholderText="YYYY-MM-DD HH:mm" />
+                        <TextBox Text="{Binding DateTimeText}" PlaceholderText="YYYY-MM-DD HH:mm" AutomationProperties.Name="Date and time in UTC" />
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                             <Button Classes="quiet" Content="Apply UTC time" Command="{Binding ApplyDateTimeCommand}" />
                             <Button Grid.Column="1" Classes="quiet" Content="Now" Command="{Binding SetNowCommand}" />
@@ -196,13 +196,14 @@
                         <TextBlock Text="Targets above your horizon" FontSize="18" FontWeight="SemiBold" Foreground="#EDF3FC" />
                     </StackPanel>
 
-                    <TextBox Grid.Row="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search stars, planets, designations…" Margin="0,0,0,9" />
+                    <TextBox Grid.Row="1" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search stars, planets, designations…" AutomationProperties.Name="Search stars, planets, and designations" Margin="0,0,0,9" />
 
                     <Grid Grid.Row="2">
                         <Grid IsVisible="{Binding IsSearching}" RowDefinitions="Auto,*">
                             <TextBlock Text="SEARCH RESULTS" Classes="kicker" Margin="4,2,0,7" />
                             <ListBox Grid.Row="1" ItemsSource="{Binding SearchResults}"
                                      SelectedItem="{Binding SelectedObject, Mode=OneWay}"
+                                     AutomationProperties.Name="Search result objects"
                                      SelectionChanged="OnObjectSelectionChanged">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="core:SkyChartObject">
@@ -226,6 +227,7 @@
                             </Grid>
                             <ListBox Grid.Row="1" ItemsSource="{Binding VisibleTargets}"
                                      SelectedItem="{Binding SelectedObject, Mode=OneWay}"
+                                     AutomationProperties.Name="Objects above the horizon with altitude"
                                      SelectionChanged="OnObjectSelectionChanged">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate x:DataType="core:SkyChartObject">
@@ -285,7 +287,7 @@
                     <TextBlock Text="Explore ±12 hours around this time" FontSize="10" Classes="secondary" />
                 </StackPanel>
                 <Button Grid.Column="1" Classes="quiet" Content="− 1h" Command="{Binding StepBackCommand}" VerticalAlignment="Center" />
-                <Slider Grid.Column="2" Minimum="-12" Maximum="12" TickFrequency="3" IsSnapToTickEnabled="False" Value="{Binding TimelineOffsetHours}" VerticalAlignment="Center" />
+                <Slider Grid.Column="2" Minimum="-12" Maximum="12" TickFrequency="3" IsSnapToTickEnabled="False" Value="{Binding TimelineOffsetHours}" VerticalAlignment="Center" AutomationProperties.Name="Time offset in hours from minus twelve to plus twelve" />
                 <Button Grid.Column="3" Classes="quiet" Content="+ 1h" Command="{Binding StepForwardCommand}" VerticalAlignment="Center" />
                 <Border Grid.Column="4" Background="#121F2E" BorderBrush="#24374D" BorderThickness="1" CornerRadius="9" Padding="11,8" VerticalAlignment="Center">
                     <StackPanel Spacing="2" HorizontalAlignment="Right">

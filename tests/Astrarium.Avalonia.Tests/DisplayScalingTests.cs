@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Automation;
 using Avalonia.Headless;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -31,6 +32,7 @@ public sealed class DisplayScalingTests
                 window.Show();
                 WaitUntil(() => !viewModel.IsBusy && viewModel.Scene is not null,
                     "main window finished its initial sky calculation");
+                AssertInteractiveFieldsAreNamed(window);
                 VerifyWindowAtScales(window, 1080, 720, "main");
             }, CancellationToken.None);
         }
@@ -59,6 +61,7 @@ public sealed class DisplayScalingTests
             planner.Show();
             WaitUntil(() => !viewModel.IsBusy && viewModel.Plan is not null,
                 "planner finished building its initial observing plan");
+            AssertInteractiveFieldsAreNamed(planner);
             VerifyWindowAtScales(planner, 780, 600, "planner");
         }, CancellationToken.None);
     }
@@ -112,5 +115,21 @@ public sealed class DisplayScalingTests
         }
 
         Assert.IsTrue(condition(), $"Timed out while waiting for {description} after {elapsed.Elapsed}.");
+    }
+
+    private static void AssertInteractiveFieldsAreNamed(Window window)
+    {
+        var unnamedFields = window.GetVisualDescendants().OfType<Control>()
+            .Where(control => control is TextBox or ComboBox or Slider)
+            .Where(control => string.IsNullOrWhiteSpace(AutomationProperties.GetName(control)))
+            .Select(control => control.GetType().Name)
+            .ToArray();
+        Assert.IsEmpty(unnamedFields,
+            $"Interactive fields must expose an accessible name: {string.Join(", ", unnamedFields)}.");
+
+        var unnamedLists = window.GetVisualDescendants().OfType<ListBox>()
+            .Where(list => string.IsNullOrWhiteSpace(AutomationProperties.GetName(list)))
+            .ToArray();
+        Assert.IsEmpty(unnamedLists, "Each list must expose an accessible name.");
     }
 }
