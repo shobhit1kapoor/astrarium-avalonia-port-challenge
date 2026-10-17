@@ -6,7 +6,7 @@ This repository contains a cross-platform Avalonia port of [Astrarium](https://g
 
 The first Windows vertical slice now runs: it loads a licensed catalog of 5,070 naked-eye stars, computes local sky positions with Astrarium's VSOP87/ELP2000 algorithms, draws a horizon chart with constellation guides and solar-system bodies, and supports observer/time changes, search, and object inspection. The Windows Release app has built and remained running in a launch smoke check; a human visual review and macOS/Linux launch checks are still pending. The complete plugin catalog is not ported.
 
-The immediate priority is to prove the same workflow on Windows, macOS, and Linux, then finish the observing experience, package clean downloads, capture before/after screenshots, and write the measured migration report. CI packaging is defined in [`.github/workflows/astrarium-port.yml`](.github/workflows/astrarium-port.yml); no CI run or public release is claimed yet.
+The initial hosted CI run passed solution tests and self-contained packaging on Windows x64, Linux x64, macOS Intel, and macOS Apple silicon. A follow-up run for the latest chart-layer change is pending. CI verifies builds and packages; only Windows has had a local GUI launch check so far. Public release assets, before/after screenshots, and the measured migration report are still open.
 
 ## Project notes
 
@@ -20,8 +20,9 @@ The immediate priority is to prove the same workflow on Windows, macOS, and Linu
 
 - `dotnet test Astrarium.Port.sln --configuration Release --no-restore`: 97 tests passed (92 retained Astrarium algorithm checks and 5 port-core checks), zero failures, zero warnings.
 - `dotnet build src/Astrarium.Avalonia/Astrarium.Avalonia.csproj --configuration Release --no-restore`: Windows-host Release build succeeded with zero warnings.
-- Self-contained `dotnet publish` succeeded locally for `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64`; this is a cross-compile check, not an OS launch check.
-- The packaged Windows x64 executable opened and remained responsive during a local launch smoke check. Linux/macOS launches, visual QA, and CI runs remain open.
+- Hosted CI run [#39030662449](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39030662449) passed tests and self-contained packaging on `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64` for the first public revision.
+- Self-contained `dotnet publish` also succeeded locally for all four runtime identifiers.
+- The packaged Windows x64 executable opened and remained responsive during a local launch smoke check. Linux/macOS launches and visual QA remain open.
 
 This is a focused first port of Astrarium's observing workflow; it does not claim parity with the original plugin ecosystem.
 

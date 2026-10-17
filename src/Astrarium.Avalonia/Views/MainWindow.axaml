@@ -147,6 +147,7 @@
                             <TextBlock Classes="kicker" Text="CHART LAYERS" />
                             <CheckBox Content="Star catalog" IsChecked="{Binding ShowStars}" Foreground="#CFD9E8" />
                             <CheckBox Content="Featured asterisms" IsChecked="{Binding ShowConstellations}" Foreground="#CFD9E8" />
+                            <CheckBox Content="Sun, Moon &amp; planets" IsChecked="{Binding ShowBodies}" Foreground="#CFD9E8" />
                             <TextBlock Text="Cassiopeia · Orion · Big Dipper · Summer Triangle" FontSize="10" Classes="secondary" TextWrapping="Wrap" />
                         </StackPanel>
 
@@ -177,6 +178,7 @@
                                              SelectedObject="{Binding SelectedObject, Mode=TwoWay}"
                                              ShowStars="{Binding ShowStars}"
                                              ShowConstellations="{Binding ShowConstellations}"
+                                             ShowBodies="{Binding ShowBodies}"
                                              Margin="8" />
                         <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="22,0,0,20" Spacing="3" IsHitTestVisible="False">
                             <TextBlock Text="{Binding SkySummary}" FontSize="11" Foreground="#DAE7F5" />

@@ -21,6 +21,9 @@ public sealed class SkyMapControl : Control
     public static readonly StyledProperty<bool> ShowConstellationsProperty =
         AvaloniaProperty.Register<SkyMapControl, bool>(nameof(ShowConstellations), true);
 
+    public static readonly StyledProperty<bool> ShowBodiesProperty =
+        AvaloniaProperty.Register<SkyMapControl, bool>(nameof(ShowBodies), true);
+
     private static readonly IBrush SkyFill = new SolidColorBrush(Color.Parse("#0B1424"));
     private static readonly IPen HorizonPen = new Pen(new SolidColorBrush(Color.Parse("#54BDAE")), 1.4);
     private static readonly IPen GridPen = new Pen(new SolidColorBrush(Color.Parse("#31445C")), 0.8);
@@ -40,7 +43,7 @@ public sealed class SkyMapControl : Control
 
     static SkyMapControl()
     {
-        AffectsRender<SkyMapControl>(SceneProperty, SelectedObjectProperty, ShowStarsProperty, ShowConstellationsProperty);
+        AffectsRender<SkyMapControl>(SceneProperty, SelectedObjectProperty, ShowStarsProperty, ShowConstellationsProperty, ShowBodiesProperty);
     }
 
     public SkyScene? Scene
@@ -65,6 +68,12 @@ public sealed class SkyMapControl : Control
     {
         get => GetValue(ShowConstellationsProperty);
         set => SetValue(ShowConstellationsProperty, value);
+    }
+
+    public bool ShowBodies
+    {
+        get => GetValue(ShowBodiesProperty);
+        set => SetValue(ShowBodiesProperty, value);
     }
 
     public override void Render(DrawingContext context)
@@ -113,7 +122,8 @@ public sealed class SkyMapControl : Control
             }
         }
 
-        DrawBodies(context, scene, center, radius);
+        if (ShowBodies)
+            DrawBodies(context, scene, center, radius);
         DrawSelectedInfo(context, center, radius);
     }
 
@@ -216,6 +226,9 @@ public sealed class SkyMapControl : Control
     private void DrawSelectedInfo(DrawingContext context, Point center, double radius)
     {
         if (SelectedObject is null || SelectedObject.AltitudeDegrees < 0)
+            return;
+        if ((SelectedObject.Kind == SkyObjectKind.Star && !ShowStars) ||
+            (SelectedObject.Kind != SkyObjectKind.Star && !ShowBodies))
             return;
 
         var point = ToScreen(SelectedObject, center, radius);

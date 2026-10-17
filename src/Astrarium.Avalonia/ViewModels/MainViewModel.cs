@@ -71,6 +71,9 @@ public partial class MainViewModel : ViewModelBase
     private bool showConstellations = true;
 
     [ObservableProperty]
+    private bool showBodies = true;
+
+    [ObservableProperty]
     private LocationPreset? selectedLocationPreset;
 
     public ObservableCollection<LocationPreset> LocationPresets { get; }

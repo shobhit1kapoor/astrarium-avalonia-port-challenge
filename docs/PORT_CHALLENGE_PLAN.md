@@ -44,7 +44,7 @@ Working priorities:
 Astrarium is the selected **open-source** submission, targeting **Best Legacy Revival** and **Best Cross-Platform Port**. See the [migration brief](ASTRARIUM_MIGRATION_BRIEF.md) and [delivery plan](ASTRARIUM_PORT_PLAN.md) for the source audit, port boundary, implementation status, evidence map, risks, and dated schedule.
 
 - [x] Confirm the original Windows planetarium predates the challenge and its code license allows an open-source port.
-- [x] Establish a portable .NET/Avalonia solution, run the first observing flow on Windows, and add CI packaging for Windows, macOS, and Linux.
+- [x] Establish a portable .NET/Avalonia solution, run the first observing flow on Windows, and pass the first hosted build/test/package matrix on Windows, macOS, and Linux.
 - [ ] Run the CI matrix and launch macOS/Linux artifacts; record CI-only versus physical checks.
 - [ ] Finish the focused observing flow and review keyboard use, resizing, and scaling.
 - [ ] Publish the source repository under an OSI-approved license and judge-downloadable builds for each target OS.
