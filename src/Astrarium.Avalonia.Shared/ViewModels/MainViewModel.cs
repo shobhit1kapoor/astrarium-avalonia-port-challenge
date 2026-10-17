@@ -385,7 +385,7 @@ public partial class MainViewModel : ViewModelBase
             token.ThrowIfCancellationRequested();
             Scene = calculated;
             IsBusy = false;
-            StatusMessage = $"Sky calculated for {_location.Name} · positions are local topocentric coordinates";
+            StatusMessage = $"Sky for {_location.Name} · topocentric";
         }
         catch (OperationCanceledException)
         {
