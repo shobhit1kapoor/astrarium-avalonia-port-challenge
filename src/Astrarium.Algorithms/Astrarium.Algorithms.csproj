@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Astrarium.Algorithms</AssemblyName>
+    <RootNamespace>Astrarium.Algorithms</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\Constells.dat" />
+    <EmbeddedResource Include="Data\ELP.bin" />
+    <EmbeddedResource Include="Data\VSOP87B.bin" />
+    <EmbeddedResource Include="Data\VSOP87D.bin" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,300 @@
+﻿using System;
+using static System.Math;
+using static Astrarium.Algorithms.Angle;
+
+namespace Astrarium.Algorithms
+{
+    /// <summary>
+    /// Provides methods for calculation of ephemerides of the Sun.
+    /// </summary>
+    public static class SolarEphem
+    {
+        /// <summary>
+        /// Calculates parallax of the Sun
+        /// </summary>
+        /// <param name="distance">Distance to the Sun, in A.U.</param>
+        /// <returns>Parallax value in degrees.</returns>
+        /// <remarks>
+        /// Method is taken from AA(II), p. 279.
+        /// </remarks>
+        public static double Parallax(double distance)
+        {
+            return 8.794 / distance / 3600;
+        }
+
+        /// <summary>
+        /// Gets solar semidiameter
+        /// </summary>
+        /// <param name="distance">Distance to the Sun, in AU.</param>
+        /// <returns>
+        /// Solar semidiameter, in arcseconds.
+        /// </returns>
+        /// <remarks>
+        /// Formula is taken from AA(I) book, p. 359.
+        /// </remarks>
+        public static double Semidiameter(double distance)
+        {
+            return 959.63 / distance;
+        }
+
+        /// <summary>
+        /// Gets Carrington rotation number of Sun.
+        /// </summary>
+        /// <param name="jd">Julian day to calculate the Carrington rotation number</param>
+        /// <returns>Carrington rotation number for the given instant.</returns>
+        public static long CarringtonNumber(double jd)
+        {
+            const double jd0 = 2398140.10155;
+            return Convert.ToInt64(Round((jd - jd0) / 27.2752316 - 0.5));
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="jd"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// The method is taken from <see href="https://space.umd.edu/pm/crn/carrtime.html"/>
+        /// </remarks>
+        public static double CarringtonLongitude(double jd)
+        {
+            // 1 Jan 1995
+            double epoch = Date.JulianDay(1995, 1, 1);
+
+            // days since epoch
+            double X = jd - epoch;
+
+            // Carrington longitude derived from assuming a constant period of Sun rotation
+            double lon = To360(349.03 - (360.0 * X / 27.2753));
+
+            const double a = 1.91787;
+            const double b = -0.13067;
+            const double c = -8.25278E-2;
+            const double d = -0.17505;
+            const double e = 365.27116;
+            const double f = 0.26318;
+            const double g = -26379.45;
+            const double h = -5.20448E-3;
+            const double i = -5.56336E-2;
+            double piXe = PI * X / e;
+
+            double fit = f + X / g + 
+                a * Sin(2 * piXe) + 
+                b * Sin(4 * piXe) + 
+                h * Sin(6 * piXe) + 
+                c * Cos(2 * piXe) + 
+                d * Cos(4 * piXe) + 
+                i * Cos(6 * piXe);
+
+            return To360(lon + fit);
+        }
+
+        /// <summary>
+        /// Calculates instant of beginning of astronomical season for given julian day.
+        /// </summary>
+        /// <param name="jd">Given year for which the date of beginning of season will be calculated.</param>
+        /// <param name="season">Astronomical season.</param>
+        /// <returns>Returns local date and time of beginning of the season.</returns>
+        /// <remarks>
+        /// Method is taken from AA(I), chapter 26.
+        /// </remarks>
+        public static double Season(double jd, Season season)
+        {
+            int year = new Date(jd).Year;
+            
+            double jd0 = 0;
+            if (year >= -1000 && year < 1000)
+            {
+                double Y = year / 1000.0;
+                double Y2 = Y * Y;
+                double Y3 = Y2 * Y;
+                double Y4 = Y3 * Y;
+
+                switch (season)
+                {
+                    case Astrarium.Algorithms.Season.Spring:
+                        jd0 = 1721139.29189 + 365242.13740 * Y + 0.06134 * Y2 + 0.00111 * Y3 - 0.00071 * Y4;
+                        break;
+                    case Astrarium.Algorithms.Season.Summer:
+                        jd0 = 1721233.25401 + 365241.72562 * Y - 0.05323 * Y2 + 0.00907 * Y3 + 0.00025 * Y4;
+                        break;
+                    case Astrarium.Algorithms.Season.Autumn:
+                        jd0 = 1721325.70455 + 365242.49558 * Y - 0.11677 * Y2 - 0.00297 * Y3 + 0.00074 * Y4;
+                        break;
+                    case Astrarium.Algorithms.Season.Winter:
+                        jd0 = 1721414.39987 + 365242.88257 * Y - 0.00769 * Y2 - 0.00933 * Y3 - 0.00006 * Y4;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else if (year >= 1000 && year <= 3000)
+            {
+                double Y = (year - 2000) / 1000.0;
+                double Y2 = Y * Y;
+                double Y3 = Y2 * Y;
+                double Y4 = Y3 * Y;
+
+                switch (season)
+                {
+                    case Astrarium.Algorithms.Season.Spring:
+                        jd0 = 2451623.80984 + 365242.37404 * Y + 0.05169 * Y2 - 0.00411 * Y3 - 0.00057 * Y4;
+                        break;
+                    case Astrarium.Algorithms.Season.Summer:
+                        jd0 = 2451716.56767 + 365241.62603 * Y + 0.00325 * Y2 + 0.00888 * Y3 - 0.00030 * Y4;
+                        break;
+                    case Astrarium.Algorithms.Season.Autumn:
+                        jd0 = 2451810.21715 + 365242.01767 * Y - 0.11575 * Y2 + 0.00337 * Y3 + 0.00078 * Y4;
+                        break;
+                    case Astrarium.Algorithms.Season.Winter:
+                        jd0 = 2451900.05952 + 365242.74049 * Y - 0.06223 * Y2 - 0.00823 * Y3 + 0.00032 * Y4;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                throw new ArgumentException("Method valid only for years in range -1000 to 3000.", nameof(jd));
+            }
+
+            double T = (jd0 - 2451545.0) / 36525.0;
+            double W = 35999.373 * T - 2.47;
+            double delta_lambda = 1 + 0.0334 * Cos(ToRadians(W)) + 0.0007 * Cos(ToRadians(2 * W));
+
+            double S =
+                485 * Cos(ToRadians(324.96 + 1934.136 * T)) +
+                203 * Cos(ToRadians(337.23 + 32964.467 * T)) +
+                199 * Cos(ToRadians(342.08 + 20.186 * T)) +
+                182 * Cos(ToRadians(27.85 + 445267.112 * T)) +
+                156 * Cos(ToRadians(73.14 + 45036.886 * T)) +
+                136 * Cos(ToRadians(171.52 + 22518.443 * T)) +
+                77 * Cos(ToRadians(222.54 + 65928.934 * T)) +
+                74 * Cos(ToRadians(296.72 + 3034.906 * T)) +
+                70 * Cos(ToRadians(243.58 + 9037.513 * T)) +
+                58 * Cos(ToRadians(119.81 + 33718.147 * T)) +
+                52 * Cos(ToRadians(297.17 + 150.678 * T)) +
+                50 * Cos(ToRadians(21.02 + 2281.226 * T)) +
+                45 * Cos(ToRadians(247.54 + 29929.562 * T)) +
+                44 * Cos(ToRadians(325.15 + 31555.956 * T)) +
+                29 * Cos(ToRadians(60.93 + 4443.417 * T)) +
+                18 * Cos(ToRadians(155.12 + 67555.328 * T)) +
+                17 * Cos(ToRadians(288.79 + 4562.452 * T)) +
+                16 * Cos(ToRadians(198.04 + 62894.029 * T)) +
+                14 * Cos(ToRadians(199.76 + 31436.921 * T)) +
+                12 * Cos(ToRadians(95.39 + 14577.848 * T)) +
+                12 * Cos(ToRadians(287.11 + 31931.756 * T)) +
+                12 * Cos(ToRadians(320.81 + 34777.259 * T)) +
+                9 * Cos(ToRadians(227.73 + 1222.114 * T)) +
+                8 * Cos(ToRadians(15.45 + 16859.074 * T));
+
+            return jd0 + (0.00001 * S) / delta_lambda;
+        }
+
+        /// <summary>
+        /// Calculates low-accuracy geocentric position of the Sun expressed in ecliptical coordinates.
+        /// </summary>
+        /// <param name="jd"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Method is taken from AA(II), chapter 25. 
+        /// </remarks>
+        public static CrdsEcliptical Ecliptical(double jd)
+        {
+            double T = (jd - 2451545.0) / 36525.0;
+            double T2 = T * T;
+
+            // eccentricity of the Earth's orbit
+            double e = 0.016708634 - 0.000042037 * T - 0.0000001267 * T2;
+            
+            // geometric true longitude of the Sun
+            double L0 = 280.46646 + 36000.76983 * T + 0.0003032 * T2;
+
+            // mean anomaly of the Sun
+            double M = 357.52911 + 35999.05029 * T - 0.0001537 * T2;
+            M = ToRadians(M);
+
+            // Sun's equation of the center
+            double C = (1.914602 - 0.004817 * T - 0.000014 * T2) * Sin(M)
+                + (0.019993 - 0.000101 * T) * Sin(2 * M)
+                + 0.000289 * Sin(3 * M);
+
+            // True longitude of the Sun (⊙)
+            double TL = L0 + C;
+
+            // True anomaly of the Sun
+            double v = ToDegrees(M) + C;
+
+            // Sun's radius-vector
+            double R = 1.000_001_018 * (1 - e * e) / (1 + e * Cos(ToRadians(v)));
+            
+            // Longitude of the ascending node of the Moon's mean orbit
+            double Omega = 125.04 - 1934.136 * T;
+            Omega = ToRadians(Omega);
+
+            // Apparent longitude of the Sun
+            double lambda = To360(TL - 0.00569 - 0.00478 * Sin(Omega));
+
+            return new CrdsEcliptical(lambda, 0, R);
+        }
+
+        /// <summary>
+        /// Calculates heliographical coordinates of the center of solar disk.
+        /// </summary>
+        /// <param name="jd">Julian day</param>
+        /// <returns>Heliographical coordinates of the center of solar disk</returns>
+        /// <remarks>
+        /// Method is taken from AA(II), chapter 29. 
+        /// </remarks>
+        public static CrdsHeliographical Center(double jd)
+        {
+            double T = (jd - 2451545.0) / 36525.0;
+            double T2 = T * T;
+
+            // Sun's sidereial period, expressed in days
+            const double SP = 25.38;
+
+            double theta = (jd - 2398220) * 360 / SP;
+
+            // inclination of the solar equator on the ecliptic
+            double I = ToRadians(7.25);
+
+            // longitude of the ascending node of the solar equator on the ecliptic
+            double K = 73.6667 + 1.395_8333 * (jd - 2396_758) / 36525;
+
+            // geometric true longitude of the Sun
+            double L0 = 280.46646 + 36000.76983 * T + 0.0003032 * T2;
+
+            // mean anomaly of the Sun
+            double M = 357.52911 + 35999.05029 * T - 0.0001537 * T2;
+            M = ToRadians(M);
+
+            // Sun's equation of the center
+            double C = (1.914602 - 0.004817 * T - 0.000014 * T2) * Sin(M)
+                + (0.019993 - 0.000101 * T) * Sin(2 * M)
+                + 0.000289 * Sin(3 * M);
+
+            // True longitude of the Sun (⊙)
+            double TL = L0 + C;
+
+            // Longitude of the ascending node of the Moon's mean orbit
+            double Omega = ToRadians(125.04 - 1934.136 * T);
+
+            // Apparent longitude of the Sun
+            double lambda = To360(TL - 0.00569 - 0.00478 * Sin(Omega));
+
+            // (lambda - K) in radians
+            double lambda_K = ToRadians(lambda - K);
+
+            double sinB0 = Sin(lambda_K) * Sin(I);
+
+            double eta = Atan2(-Sin(lambda_K) * Cos(I), -Cos(lambda_K));
+
+            return new CrdsHeliographical()
+            {
+                Latitude = ToDegrees(Asin(sinB0)),
+                Longitude = To360(ToDegrees(eta) - theta)
+            };
+        }
+    }
+}

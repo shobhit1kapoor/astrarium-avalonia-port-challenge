@@ -1,0 +1,70 @@
+name: Astrarium port build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-and-package:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Windows x64
+            runner: windows-latest
+            rid: win-x64
+            artifact: astrarium-windows-x64
+          - label: Linux x64
+            runner: ubuntu-24.04
+            rid: linux-x64
+            artifact: astrarium-linux-x64
+          - label: macOS Intel
+            runner: macos-15-intel
+            rid: osx-x64
+            artifact: astrarium-macos-x64
+          - label: macOS Apple silicon
+            runner: macos-15
+            rid: osx-arm64
+            artifact: astrarium-macos-arm64
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Test the solution
+        run: dotnet test Astrarium.Port.sln --configuration Release
+
+      - name: Publish self-contained desktop build
+        run: >-
+          dotnet publish src/Astrarium.Avalonia/Astrarium.Avalonia.csproj
+          --configuration Release
+          --runtime ${{ matrix.rid }}
+          --self-contained true
+          --output publish
+          -p:PublishTrimmed=false
+          -p:PublishSingleFile=false
+
+      - name: Package build with executable permissions
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts | Out-Null
+          tar -czf "artifacts/${{ matrix.artifact }}.tar.gz" -C publish .
+
+      - name: Upload downloadable build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: artifacts/${{ matrix.artifact }}.tar.gz
+          if-no-files-found: error
+          retention-days: 30
