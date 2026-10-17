@@ -63,7 +63,9 @@
             <Grid ColumnDefinitions="Auto,*,Auto" Margin="26,0">
                 <StackPanel Orientation="Horizontal" Spacing="13" VerticalAlignment="Center">
                     <Border Width="38" Height="38" CornerRadius="12" Background="#17383F" BorderBrush="#2B6868" BorderThickness="1">
-                        <TextBlock Text="✦" Foreground="#8DE4D4" FontSize="21" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Path Data="M 8,0 L 10,6 L 16,8 L 10,10 L 8,16 L 6,10 L 0,8 L 6,6 Z"
+                              Fill="#8DE4D4" Width="18" Height="18" Stretch="Uniform"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <StackPanel Spacing="0" VerticalAlignment="Center">
                         <TextBlock Text="ASTRARIUM" FontSize="16" FontWeight="Bold" Foreground="#F1F5FC" />
@@ -114,7 +116,7 @@
                                 <TextBox Text="{Binding LocationName}" PlaceholderText="Observing site" AutomationProperties.Name="Observing site name" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Spacing="5">
-                                <TextBlock Text="ELEVATION (m)" Classes="kicker" />
+                                <TextBlock Text="ELEV. (m)" Classes="kicker" />
                                 <TextBox Text="{Binding ElevationText}" PlaceholderText="0" AutomationProperties.Name="Observing site elevation in meters" />
                             </StackPanel>
                         </Grid>
