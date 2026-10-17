@@ -20,31 +20,33 @@ The challenge announcement says the same codebase on Windows, macOS, and Linux i
 
 ## Baseline at the end of October 17
 
-**Implemented:** separate portable algorithm, core, and Avalonia UI projects; bundled licensed HYG magnitude-6 subset; actual topocentric positions for 5,070 stars, Sun, Moon, and seven planets; a polar horizon chart with featured asterisms, collision-aware labels, compass rotation, drag pan, wheel zoom, and Home reset; location presets and coordinate entry; UTC date/time and 24-hour scrubber; search with an explicit empty state; object selection and position details; keyboard arrow navigation; separate star/asterism/body chart layers; and atomic, versioned local persistence for observer site, UTC time, and layer visibility. Preferences use required JSON fields, a bounded read, a safe fallback for damaged files, and a durable temporary-file replacement. A manual close/relaunch check restored a custom Mauna Kea site, a changed UTC time, and a hidden-body layer. All 103 tests pass locally; the solution builds with zero warnings/errors. The packaged Windows Release archive has been launched and visually reviewed.
+**Implemented:** separate portable algorithm, core, and Avalonia UI projects; bundled licensed HYG magnitude-6 subset; actual topocentric positions for 5,070 stars, Sun, Moon, and seven planets; a polar horizon chart with featured asterisms, collision-aware labels, compass rotation, drag pan, wheel zoom, and Home reset; location presets and coordinate entry; UTC date/time and 24-hour scrubber; search with an explicit empty state; object selection and position details; keyboard arrow navigation; separate star/asterism/body chart layers; and atomic, versioned local persistence for observer site, UTC time, and layer visibility. Preferences use required JSON fields, a bounded read, a safe fallback for damaged files, and a durable temporary-file replacement. The restored observation planner reports astronomical-darkness intervals and target windows filtered by minimum altitude, maximum Sun altitude, magnitude, and minimum duration; a result returns to the chart at its best sampled instant. Planner windows use bounded time samples with linearly interpolated edges, not exact event solving. A manual close/relaunch check restored a custom Mauna Kea site, a changed UTC time, and a hidden-body layer. All 106 tests pass locally; the solution builds with zero warnings/errors. The packaged Windows Release archive has been launched and visually reviewed.
 
-**Still unproven or incomplete:** a full observing-night planner, physical Linux/macOS device checks, and responsive layout at the minimum supported window size. Hosted CI [run #39033579633](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39033579633) passed all 103 solution tests, self-contained publishing, and actual `Window.Opened` markers on `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64`. The corresponding builds are available in [Preview 3](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/releases/tag/v0.1.0-preview.3). The packaged Windows build has been launched locally; the other three checks are runner-only. This check count does not establish astronomical accuracy for every object/date; the inherited low-accuracy Carrington fit has an explicit 2021 residual check.
+**Still unproven or incomplete:** full upstream plugin/catalog parity, saved/imported observation plans, deep-sky targets, weather or Moon-separation scoring, non-default DPI scaling, and physical Linux/macOS device checks. The main window was visually reviewed at its 1,080 × 720 minimum, and the planner at 780 × 600; the tested Windows host was at its default display scale. The previous hosted CI [run #39033951488](https://github.com/shobhit1kapoor/astrarium-avalonia-port-challenge/actions/runs/39033951488) passed the pre-planner source's tests, self-contained publishing, and actual `Window.Opened` markers on `win-x64`, `linux-x64`, `osx-x64`, and `osx-arm64`. The packaged Windows Preview 3 build was launched locally; the other three checks were runner-only. The current working tree adds the observation planner and passes 106 local tests with a zero-warning Windows build; its cross-platform matrix is still required before release. Test counts do not establish astronomical accuracy for every object/date; the inherited low-accuracy Carrington fit has an explicit 2021 residual check.
 
-**Remaining checks:** review the UI at its minimum supported size and common scaling levels, and submit the completed entry before October 23. Desktop builds, tests, hosted window checks, migration report, screenshots, and release downloads are already published. The matrix includes macOS Intel and Apple silicon so architecture gaps are visible.
+**Remaining checks:** run hosted build/test/publish/window-smoke jobs on the planner source, check common non-default scaling if the environment permits, refresh release downloads, and submit the completed entry before October 23. Both main and planner windows have been reviewed at their declared minimum dimensions on Windows at the host's default scale. Physical macOS/Linux device checks remain unavailable; runner-only evidence will be labeled honestly.
 
 ## Acceptance criteria for the first release
 
 ### Product
 
-- [ ] The app starts directly into a useful observing session; no account, network connection, or manual setup is needed to see the sample sky.
+- [x] The app starts directly into a useful observing session; no account, network connection, or manual setup is needed to see the sample sky.
 - [x] Observer coordinates/location and date/time can be changed, validated, saved across restarts, and used to recompute the chart.
-- [ ] The chart is driven by real Astrarium calculations and a clearly licensed catalog, not hard-coded screenshot coordinates.
+- [x] The chart is driven by real Astrarium calculations and a clearly licensed catalog, not hard-coded screenshot coordinates.
 - [x] The user can pan/zoom, toggle core chart layers, search/select objects, and see object identity plus coordinates/altitude or visibility data.
-- [x] The above-horizon list shows a filtered set of bright targets for the selected instant; it is labeled as a current-sky view, not a nightly observing planner.
-- [ ] The chart and controls remain usable with keyboard navigation, resizing, high DPI scaling, and reduced window dimensions.
-- [ ] Errors and missing/unsupported data/services are surfaced clearly. Core viewing remains available offline.
+- [x] The above-horizon list shows a filtered set of bright targets for the selected instant; it is labeled as a current-sky view.
+- [x] The planner finds darkness and candidate target windows using the migrated calculations; it filters by altitude, Sun altitude, magnitude, and minimum window duration, and can focus a result on the chart.
+- [x] The chart and controls remain usable with keyboard navigation and at the declared minimum dimensions on the Windows host's default display scale; list scrolling was checked at the planner's minimum size.
+- [ ] Verify the layout at common non-default high-DPI scaling levels.
+- [x] Invalid planner input and empty plan results are surfaced; the core observing view remains available offline.
 
 ### Architecture and migration
 
-- [ ] The Avalonia app targets a current portable .NET runtime and contains no WPF/WinForms dependencies.
-- [ ] Astronomy calculations, app/domain models, and UI are separate components with narrow boundaries.
-- [ ] Upstream code retains its license and attribution; every distributed dataset/asset has its own source and license record.
-- [ ] There is a recorded comparison of source behavior with the Avalonia implementation; unsupported plugins/integrations are enumerated rather than implied to work.
-- [ ] Upstream changes are anchored to a commit SHA in the migration brief.
+- [x] The Avalonia app targets a portable .NET runtime and contains no WPF/WinForms dependencies.
+- [x] Astronomy calculations, app/domain models, and UI are separate components with narrow boundaries.
+- [x] Upstream code retains its license and attribution; every distributed dataset/asset has its own source and license record.
+- [x] There is a recorded comparison of source behavior with the Avalonia implementation; unsupported plugins/integrations are enumerated rather than implied to work.
+- [x] Upstream changes are anchored to a commit SHA in the migration brief.
 
 ### Platforms and entry
 
@@ -52,7 +54,7 @@ The challenge announcement says the same codebase on Windows, macOS, and Linux i
 - [ ] Each platform has a downloadable artifact with clear launch instructions and no unexplained missing native library.
 - [ ] Each platform has an actual launch check, or the evidence explicitly labels it as CI-only.
 - [ ] README includes original and migrated screenshots, platform builds, the short migration report, and actual effort/cost.
-- [ ] Public repository uses an OSI-approved license for the application source; third-party/data notices are accurate.
+- [x] Public repository uses an OSI-approved license for the application source; third-party/data notices are accurate.
 - [ ] Official submission form is completed before the deadline.
 
 ## Architecture target
@@ -75,13 +77,13 @@ The chart renderer is an Avalonia control that consumes immutable chart data fro
 
 | Date | Work | Exit evidence |
 |---|---|---|
-| Oct 17 | Pin the upstream snapshot; audit source/data licenses; retarget the algorithm library; implement first observing chart; add core tests and cross-OS packaging workflow. | Windows vertical slice builds/runs; 97 tests pass; CI matrix is ready to execute. |
-| Oct 18 | Re-run the matrix after the latest UI changes; check downloaded artifacts and arrange macOS/Linux launches. | Latest source packages on each target; physical versus CI-only checks are recorded accurately. |
-| Oct 19 | Complete the central observing flow: reliable chart interactions, search/selection, useful above-horizon list, location/time, and saved session if stable. | End-to-end use works offline and handles invalid input and slow calculations. |
-| Oct 20 | Improve keyboard access, resizing/scaling, visual hierarchy, performance, and error states; freeze feature scope. | Release candidate has no known blocker in the main workflow. |
-| Oct 21 | Clean-checkout build, dependency/data/license review, screenshots, and honest migration-write-up draft. | Judge-facing evidence is complete except final release links and form. |
-| Oct 22 | Publish public source and downloadable artifacts; verify downloads from clean folders; finalize README and entry details. | All required open-source materials are accessible and runnable. |
-| Oct 23 | Final contingency and entry submission; stop feature work early enough to submit before 23:59 UTC. | Confirmation of submission saved. |
+| Oct 17 | Finish the observing planner vertical slice, reconcile challenge criteria, and review the current Windows UI. | 106 local tests pass; zero-warning Release build; planner runs and current screenshots are captured. |
+| Oct 18 | Push the planner source through the Windows/macOS/Linux build, test, self-contained publish, and window-open matrix; inspect generated artifacts. | Green current-source matrix on four RIDs; failures fixed before release. |
+| Oct 19 | Exercise the current artifacts and app workflow; check high-DPI behavior on Windows and improve accessibility or error handling where findings justify it. | Main and planner journeys reviewed; limitations and OS-specific evidence recorded. |
+| Oct 20 | Freeze features; review calculation assumptions, data notices, project boundaries, dependencies, and clean-checkout build instructions. | No known blocker in the core observing or planning workflow. |
+| Oct 21 | Prepare release notes and a judge-facing demonstration; verify screenshots and migration write-up against source and actual test evidence. | All required evidence is ready, with no stale Preview 3 claims. |
+| Oct 22 | Publish a new multi-platform release only after the current-source matrix is green; check downloads and hashes from clean folders. | Downloadable builds match the committed source and all launch instructions are accurate. |
+| Oct 23 | Submit the official entry with time reserved for form issues; stop feature work early enough to beat the 23:59 UTC cutoff. | Submission confirmation saved before deadline. |
 
 The schedule is aggressive. If a release blocker appears, cut optional features such as telescope integrations, broad catalog coverage, or mobile/WebAssembly before sacrificing three-desktop build quality or migration evidence.
 
@@ -89,11 +91,11 @@ The schedule is aggressive. If a release blocker appears, cut optional features 
 
 ### Before implementation expands
 
-- [ ] Inspect and record `git rev-parse HEAD` for the upstream checkout.
-- [ ] Build `Astrarium.Algorithms` after retargeting and document changes.
-- [ ] List every bundled asset/data source and decide include/omit/replace.
-- [ ] Build and open the Avalonia shell on Windows.
-- [ ] Verify scientific calculations against existing upstream reference tests.
+- [x] Inspect and record the upstream commit SHA in the migration brief.
+- [x] Build `Astrarium.Algorithms` after retargeting and document the compatibility changes.
+- [x] List bundled assets/data sources and record their licenses and provenance.
+- [x] Build and open the Avalonia shell on Windows.
+- [x] Run the retained upstream astronomy reference tests.
 
 ### Before the release candidate
 
@@ -106,9 +108,9 @@ The schedule is aggressive. If a release blocker appears, cut optional features 
 
 ### Submission evidence
 
-- [ ] Original screenshot sourced from upstream release/current app with its provenance stated.
-- [ ] Migrated screenshot captured from the actual Avalonia build.
+- [x] Original screenshot linked to the pinned upstream revision with its provenance stated.
+- [x] Migrated screenshots captured from the running Avalonia app and planner.
 - [x] README covers observed elapsed migration window, retained code, rewrites, surprises, compromises, platform differences, known limits, and build/run instructions.
-- [ ] Public source repository and OSI-approved code license.
-- [ ] Downloadable builds per target OS and checksum/release version.
+- [x] Public source repository and OSI-approved MIT code license.
+- [ ] Downloadable builds for the current planner source on each target OS, with checksums and release version. Preview 3 is a verified baseline but predates the planner.
 - [ ] Official entry form submission confirmation.

@@ -140,6 +140,7 @@
                             <Button Classes="quiet" Content="Apply UTC time" Command="{Binding ApplyDateTimeCommand}" />
                             <Button Grid.Column="1" Classes="quiet" Content="Now" Command="{Binding SetNowCommand}" />
                         </Grid>
+                        <Button Classes="action" Content="Plan an observing night" Click="OnOpenPlannerClicked" HorizontalAlignment="Stretch" />
 
                         <Border Height="1" Background="#1E2D40" />
 

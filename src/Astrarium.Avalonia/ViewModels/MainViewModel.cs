@@ -89,6 +89,10 @@ public partial class MainViewModel : ViewModelBase
 
     public ObservableCollection<LocationPreset> LocationPresets { get; }
 
+    public ObservingLocation CurrentLocation => _location;
+
+    public DateTimeOffset CurrentInstant => _referenceInstant.AddHours(TimelineOffsetHours).ToUniversalTime();
+
     public IReadOnlyList<SkyChartObject> VisibleTargets { get; private set; } = [];
 
     public IReadOnlyList<SkyChartObject> SearchResults { get; private set; } = [];
@@ -204,6 +208,23 @@ public partial class MainViewModel : ViewModelBase
     public string SelectedAzimuth => SelectedObject is null ? "—" : $"{SelectedObject.AzimuthDegrees:000.0}°";
     public string SelectedMagnitude => SelectedObject is null ? "—" : SelectedObject.Magnitude.ToString("0.00", CultureInfo.InvariantCulture);
     public string SelectedAltAz => SelectedObject is null ? "—" : $"{SelectedAltitude}  /  {SelectedAzimuth}";
+
+    public async Task GoToPlannedObservationAsync(PlannedObservation plannedObservation)
+    {
+        ArgumentNullException.ThrowIfNull(plannedObservation);
+        _referenceInstant = plannedObservation.BestTimeUtc.ToUniversalTime();
+        SelectedObject = plannedObservation.Target;
+        SchedulePreferenceSave();
+
+        if (TimelineOffsetHours != 0)
+        {
+            TimelineOffsetHours = 0;
+            return;
+        }
+
+        DateTimeText = FormatDateTime(_referenceInstant);
+        await RecalculateAsync(_referenceInstant);
+    }
 
     [RelayCommand]
     private async Task ApplyLocationAsync()
